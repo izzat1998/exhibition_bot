@@ -14,14 +14,20 @@ from infrastructure.some_api.api import MyApi  # Ensure this path is correct
 from tgbot.config import load_config  # Ensure this path is correct
 from tgbot.states.lead_form import LeadForm  # Ensure this path is correct
 
+from .core import generate_summary  # Import generate_summary to show filled data
+
 confirmation_router = Router()
 
 
 @confirmation_router.callback_query(F.data == "lead:confirm")
 async def confirm_lead(callback: CallbackQuery, state: FSMContext):
+    # Get the summary of filled data
+    data = await state.get_data()
+    summary_text = await generate_summary(data)
+
     # Edit the existing message to show processing state
     await callback.message.edit_text(
-        "<b>⏳ Processing...</b>\n\nSubmitting your lead information. Please wait.",
+        f"{summary_text}\n\n<b>⏳ Processing...</b>\n\nSubmitting your lead information. Please wait.",
         parse_mode="HTML",
         reply_markup=None,  # Remove any existing buttons
     )
@@ -76,7 +82,8 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
     # Update the same message with result
     if status_code in (200, 201):
         await callback.message.edit_text(
-            "<b>✅ Success!</b>\n\nThank you! Your lead information has been submitted successfully.",
+            f"{summary_text}\n\n<b>✅ Success!</b>\n\n"
+            "Thank you! Your lead information has been submitted successfully.",
             parse_mode="HTML",
         )
     else:
@@ -84,7 +91,10 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
             "error", "Unknown error"
         )
         await callback.message.edit_text(
-            f"<b>❌ Error!</b>\n\nThere was a problem submitting your lead information.\n\nError: {error_detail}",
+            f"{summary_text}\n\n<b>❌ Error!</b>\n\n"
+            "There was a problem submitting your lead information.\n\n"
+            f"<b>Error:</b> {error_detail}\n\n"
+            "Please try again or contact support if the issue persists.",
             parse_mode="HTML",
         )
 
