@@ -575,30 +575,40 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
     await state.update_data(meeting_place=meeting_place_label)
     data = await state.get_data()
 
-    # Edit the existing message to confirm the selection
-    await callback.message.edit_text(
-        f"Meeting place saved: <b>{meeting_place_label}</b>",
-        parse_mode="HTML",
-        reply_markup=None,  # Remove the keyboard
-    )
-
     if data.get("business_card_photo") or data.get("business_card_skipped"):
-        await show_summary(callback.message, state)
+        # Show summary in the same message
+        summary_text = await generate_summary(await state.get_data())
+        final_text = f"{summary_text}\n\n<b>✅ Lead Information Complete</b>\n\nPlease review the information above and confirm if it's correct."
+        
+        keyboard_rows = [
+            [InlineKeyboardButton(text="✅ Confirm", callback_data="lead:confirm")],
+            [InlineKeyboardButton(text="❌ Cancel", callback_data="lead:cancel")],
+            [InlineKeyboardButton(text="🔄 Restart", callback_data="lead:restart")],
+        ]
+        markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+        
+        await callback.message.edit_text(
+            f"Meeting place saved: <b>{meeting_place_label}</b>\n\n{final_text}",
+            parse_mode="HTML",
+            reply_markup=markup,
+        )
     else:
-        # If we need to handle the case where business card is not skipped
-        skip_keyboard = [
+        # Handle case where business card is not skipped
+        keyboard_rows = [
             [
                 InlineKeyboardButton(
                     text="Skip Business Card", callback_data="business_card:skip"
                 )
             ]
         ]
-        skip_markup = InlineKeyboardMarkup(inline_keyboard=skip_keyboard)
-        await callback.message.answer(
+        markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+        
+        await callback.message.edit_text(
+            f"Meeting place saved: <b>{meeting_place_label}</b>\n\n"
             "<b>Final Step: Business Card</b>\n\n"
             "Please upload a photo of your business card or use the button below to skip this step.",
             parse_mode="HTML",
-            reply_markup=skip_markup,
+            reply_markup=markup,
         )
         await state.set_state(LeadForm.business_card_photo)
 
