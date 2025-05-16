@@ -73,8 +73,6 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
             # status_code remains 500, api_response_msg might be generic
             api_response_msg = {"error": f"API submission error: {e_submit}"}
 
-    await processing_msg.delete()
-
     if status_code in (200, 201):
         await callback.message.edit_text(
             "<b>✅ Success!</b>\n\nThank you! Your lead information has been submitted successfully.",
