@@ -390,7 +390,7 @@ async def process_mode_of_transport(callback: CallbackQuery, state: FSMContext):
     )
 
     await callback.message.edit_text(
-        f"Selected transport mode: <b>{mode_label}</b>\n\n{summary}\n\n<b>Step 11/14:</b> What is your monthly shipment volume?",
+        f"Selected transport mode: <b>{mode_label}</b>\n\n{summary}\n\n<b>Step 11/14:</b> What is the monthly shipment volume?",
         parse_mode="HTML",
         reply_markup=next_step_markup,
     )
