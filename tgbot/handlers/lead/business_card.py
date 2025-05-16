@@ -386,33 +386,31 @@ async def ocr_confirm_cb(callback: CallbackQuery, state: FSMContext):
     # This logic matches the one in the original process_business_card_initial's ocr:confirm part
     if data.get("all_contact_fields_present"):
         next_step_message = (
-            f"{summary}\n\n<b>Step 7/14:</b> What is your company's sphere of activity?"
+            f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?"
         )
         next_fsm_state = LeadForm.sphere_of_activity
     elif not data.get("full_name"):
-        next_step_message = f"{summary}\n\n<b>Step 2/14:</b> What is your full name?"
+        next_step_message = f"{summary}\n\n<b>Step 2/14:</b> What is the full name?"
         next_fsm_state = LeadForm.full_name
     elif not data.get("position"):
         next_step_message = (
-            f"{summary}\n\n<b>Step 3/14:</b> What is your position in the company?"
+            f"{summary}\n\n<b>Step 3/14:</b> What is the position in the company?"
         )
         next_fsm_state = LeadForm.position
     elif not data.get(
         "phone_number"
     ):  # This implies extracted phone was invalid or not present
-        next_step_message = f"{summary}\n\n<b>Step 4/14:</b> What is your phone number?"
+        next_step_message = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number?"
         next_fsm_state = LeadForm.phone_number
     elif not data.get("email"):  # Implies extracted email was invalid or not present
-        next_step_message = (
-            f"{summary}\n\n<b>Step 5/14:</b> What is your email address?"
-        )
+        next_step_message = f"{summary}\n\n<b>Step 5/14:</b> What is the email address?"
         next_fsm_state = LeadForm.email
     elif not data.get("company_name"):
-        next_step_message = f"{summary}\n\n<b>Step 6/14:</b> What is your company name?"
+        next_step_message = f"{summary}\n\n<b>Step 6/14:</b> What is the company name?"
         next_fsm_state = LeadForm.company_name
     else:  # Should be caught by all_contact_fields_present, but as a fallback
         next_step_message = (
-            f"{summary}\n\n<b>Step 7/14:</b> What is your company's sphere of activity?"
+            f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?"
         )
         next_fsm_state = LeadForm.sphere_of_activity
 
