@@ -575,9 +575,31 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
     await state.update_data(meeting_place=meeting_place_label)
     data = await state.get_data()
 
+    # Edit the existing message to confirm the selection
+    await callback.message.edit_text(
+        f"Meeting place saved: <b>{meeting_place_label}</b>",
+        parse_mode="HTML",
+        reply_markup=None,  # Remove the keyboard
+    )
+
     if data.get("business_card_photo") or data.get("business_card_skipped"):
-        await show_summary(
-            callback.message, state
-        )  # Pass callback.message to send new summary message
+        await show_summary(callback.message, state)
     else:
-        await callback.answer()
+        # If we need to handle the case where business card is not skipped
+        skip_keyboard = [
+            [
+                InlineKeyboardButton(
+                    text="Skip Business Card", callback_data="business_card:skip"
+                )
+            ]
+        ]
+        skip_markup = InlineKeyboardMarkup(inline_keyboard=skip_keyboard)
+        await callback.message.answer(
+            "<b>Final Step: Business Card</b>\n\n"
+            "Please upload a photo of your business card or use the button below to skip this step.",
+            parse_mode="HTML",
+            reply_markup=skip_markup,
+        )
+        await state.set_state(LeadForm.business_card_photo)
+
+    await callback.answer()
