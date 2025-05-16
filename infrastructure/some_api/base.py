@@ -6,7 +6,7 @@ import ssl
 from typing import TYPE_CHECKING, Any
 
 import backoff
-from aiohttp import ClientError, ClientSession, TCPConnector, FormData
+from aiohttp import ClientError, ClientSession, FormData, TCPConnector
 from ujson import dumps, loads
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ class BaseClient:
     @backoff.on_exception(
         backoff.expo,
         ClientError,
-        max_time=60,
+        max_time=20,
     )
     async def _make_request(
         self,
@@ -65,7 +65,7 @@ class BaseClient:
             method, url, params=params, json=json, headers=headers, data=data
         ) as response:
             status = response.status
-            if status != 200:
+            if status not in (200, 201, 404):
                 s = await response.text()
                 raise ClientError(f"Got status {status} for {method} {url}: {s}")
             try:

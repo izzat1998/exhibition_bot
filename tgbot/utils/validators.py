@@ -1,0 +1,17 @@
+import re
+
+
+def is_empty_or_whitespace(text: str | None) -> bool:
+    return not text or not text.strip()
+
+
+EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
+PHONE_RE = re.compile(r"^[0-9+()\-\s]{6,}$")
+
+
+def is_valid_email(email: str | None) -> bool:
+    return bool(email and EMAIL_RE.match(email))
+
+
+def is_valid_phone(phone: str | None) -> bool:
+    return bool(phone and PHONE_RE.match(phone))

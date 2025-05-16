@@ -4,16 +4,16 @@ import logging
 import betterlogging as bl
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
+from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 
-from tgbot.config import load_config, Config
+from tgbot.config import Config, load_config
 from tgbot.handlers import routers_list
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.services import broadcaster
 
 
 async def on_startup(bot: Bot, admin_ids: list[int]):
-    await broadcaster.broadcast(bot, admin_ids, "Бот був запущений")
+    await broadcaster.broadcast(bot, admin_ids, "Bot was started")
 
 
 def register_global_middlewares(dp: Dispatcher, config: Config, session_pool=None):
@@ -89,7 +89,7 @@ async def main():
     config = load_config(".env")
     storage = get_storage(config)
 
-    bot = Bot(token=config.tg_bot.token, parse_mode="HTML")
+    bot = Bot(token=config.tg_bot.token)
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(*routers_list)
@@ -97,6 +97,7 @@ async def main():
     register_global_middlewares(dp, config)
 
     await on_startup(bot, config.tg_bot.admin_ids)
+    await bot.delete_webhook()
     await dp.start_polling(bot)
 
 
@@ -104,4 +105,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        logging.error("Бот був вимкнений!")
+        logging.error("Bot was disabled!")

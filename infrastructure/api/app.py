@@ -6,7 +6,7 @@ from aiogram import Bot
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
 
-from tgbot.config import load_config, Config
+from tgbot.config import Config, load_config
 
 app = FastAPI()
 log_level = logging.INFO
