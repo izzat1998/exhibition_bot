@@ -76,7 +76,7 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
     await processing_msg.delete()
 
     if status_code in (200, 201):
-        await callback.message.answer(
+        await callback.message.edit_text(
             "<b>✅ Success!</b>\n\nThank you! Your lead information has been submitted successfully.",
             parse_mode="HTML",
         )
@@ -84,7 +84,7 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
         error_detail = api_response_msg.get("detail") or api_response_msg.get(
             "error", "Unknown error"
         )
-        await callback.message.answer(
+        await callback.message.edit_text(
             f"<b>❌ Error!</b>\n\nThere was a problem submitting your lead information. Error: {error_detail}",
             parse_mode="HTML",
         )
