@@ -575,13 +575,6 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
     await state.update_data(meeting_place=meeting_place_label)
     data = await state.get_data()
 
-    # Edit the message to confirm selection
-    await callback.message.edit_text(
-        f"Meeting place saved: <b>{meeting_place_label}</b>\n\n{await generate_summary(data)}",  # Show updated summary
-        parse_mode="HTML",
-        reply_markup=None,  # Remove old keyboard
-    )
-
     if data.get("business_card_photo") or data.get("business_card_skipped"):
         await show_summary(
             callback.message, state
