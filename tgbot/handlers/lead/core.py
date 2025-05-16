@@ -99,18 +99,18 @@ async def generate_summary(data: dict) -> str:
 
     field_map = {
         "full_name": ("📝 <b>Full Name:</b>", None),
-        "position": ("🏢 <b>Position:</b>", None),
-        "phone_number": ("📱 <b>Phone:</b>", None),
-        "email": ("📧 <b>Email:</b>", None),
-        "company_name": ("🏭 <b>Company:</b>", None),
-        "sphere_of_activity": ("🔍 <b>Sphere:</b>", None),
-        "company_type": ("📊 <b>Company Type:</b>", COMPANY_TYPE_CHOICES),
+        "position": ("🏢 <b>Position in the company:</b>", None),
+        "phone_number": ("📱 <b>Phone number:</b>", None),
+        "email": ("📧 <b>Email address:</b>", None),
+        "company_name": ("🏭 <b>Company name:</b>", None),
+        "sphere_of_activity": ("🔍 <b>Sphere of activity:</b>", None),
+        "company_type": ("📊 <b>Company type:</b>", COMPANY_TYPE_CHOICES),
         "cargo": ("📦 <b>Cargo:</b>", None),
-        "mode_of_transport": ("🚢 <b>Transport Mode:</b>", MODE_OF_TRANSPORT_CHOICES),
-        "shipment_volume": ("📏 <b>Volume:</b>", None),
+        "mode_of_transport": ("🚢 <b>Preferred mode of transport:</b>", MODE_OF_TRANSPORT_CHOICES),
+        "shipment_volume": ("📏 <b>Monthly shipment volume:</b>", None),
         # shipment_directions is handled specially
         "comments": ("💬 <b>Comments:</b>", None),
-        "meeting_place": ("🤝 <b>Meeting Place:</b>", None),
+        "meeting_place": ("🤝 <b>Meeting place:</b>", None),
     }
 
     for key, (label_prefix, choices) in field_map.items():

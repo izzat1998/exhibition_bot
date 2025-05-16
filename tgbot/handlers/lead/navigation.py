@@ -73,14 +73,14 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
     prompt_text = ""
 
     if prev_state_name == "business_card_photo":
-        prompt_text = f"{summary}\n\n<b>Step 1/14:</b> Please upload a photo of your business card, or type 'skip' to fill the form manually."
+        prompt_text = f"{summary}\n\n<b>Step 1/14:</b> Please upload a photo of the business card, or type 'skip' to fill the form manually."
         # No specific keyboard beyond what might be implicitly handled by photo/text input
         await msg_to_edit_or_answer.answer(
             prompt_text, parse_mode="HTML"
         )  # Send new message for this step
 
     elif prev_state_name == "full_name":
-        prompt_text = f"{summary}\n\n<b>Step 2/14:</b> What is your full name?"
+        prompt_text = f"{summary}\n\n<b>Step 2/14:</b> What is the full name?"
         if ocr_processed and extracted_data.get("full_name"):
             val = extracted_data.get("full_name")
             safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["name"])
@@ -95,7 +95,7 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
 
     elif prev_state_name == "position":
         prompt_text = (
-            f"{summary}\n\n<b>Step 3/14:</b> What is your position in the company?"
+            f"{summary}\n\n<b>Step 3/14:</b> What is the position in the company?"
         )
         if ocr_processed and extracted_data.get("position"):
             val = extracted_data.get("position")
@@ -112,7 +112,7 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
             )
 
     elif prev_state_name == "phone_number":
-        prompt_text = f"{summary}\n\n<b>Step 4/14:</b> What is your phone number?"
+        prompt_text = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number?"
         phone_val = extracted_data.get("phone") or extracted_data.get("phone_number")
         if ocr_processed and phone_val:
             safe_val = truncate_for_callback(
@@ -128,7 +128,7 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
             )
 
     elif prev_state_name == "email":
-        prompt_text = f"{summary}\n\n<b>Step 5/14:</b> What is your email address?"
+        prompt_text = f"{summary}\n\n<b>Step 5/14:</b> What is the email address?"
         if ocr_processed and extracted_data.get("email"):
             val = extracted_data.get("email")
             safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["email"])
@@ -142,7 +142,7 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
             )
 
     elif prev_state_name == "company_name":
-        prompt_text = f"{summary}\n\n<b>Step 6/14:</b> What is your company name?"
+        prompt_text = f"{summary}\n\n<b>Step 6/14:</b> What is the company name?"
         if ocr_processed and extracted_data.get("company_name"):
             val = extracted_data.get("company_name")
             safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["company"])
@@ -157,11 +157,11 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
 
     elif prev_state_name == "sphere_of_activity":
         prompt_text = (
-            f"{summary}\n\n<b>Step 7/14:</b> What is your company's sphere of activity?"
+            f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?"
         )
 
     elif prev_state_name == "company_type":
-        prompt_text = f"{summary}\n\n<b>Step 8/14:</b> What is your company type?"
+        prompt_text = f"{summary}\n\n<b>Step 8/14:</b> What is the company type?"
         for value, label in COMPANY_TYPE_CHOICES:
             keyboard_rows.append(
                 [
@@ -178,7 +178,7 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
 
     elif prev_state_name == "mode_of_transport":
         prompt_text = (
-            f"{summary}\n\n<b>Step 10/14:</b> What is your preferred mode of transport?"
+            f"{summary}\n\n<b>Step 10/14:</b> What is the preferred mode of transport?"
         )
         for value, label in MODE_OF_TRANSPORT_CHOICES:
             keyboard_rows.append(
@@ -187,11 +187,11 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
 
     elif prev_state_name == "shipment_volume":
         prompt_text = (
-            f"{summary}\n\n<b>Step 11/14:</b> What is your monthly shipment volume?"
+            f"{summary}\n\n<b>Step 11/14:</b> What is the monthly shipment volume?"
         )
 
     elif prev_state_name == "shipment_directions":
-        prompt_text = f"{summary}\n\n<b>Step 12/14:</b> Please select your shipment directions (you can select multiple):"
+        prompt_text = f"{summary}\n\n<b>Step 12/14:</b> Please select the shipment directions (you can select multiple):"
         directions = data.get("available_directions", [])
         selected_directions_ids = data.get("selected_directions", set())
         if isinstance(selected_directions_ids, list):  # Ensure set of strings

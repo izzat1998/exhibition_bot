@@ -67,8 +67,8 @@ async def cmd_lead(message: Message, state: FSMContext):
 
     await message.answer(
         "📋 <b>Lead Information Form</b>\n\n"
-        "Let's start by uploading your business card for automatic information extraction.\n\n"
-        "<b>Step 1/14:</b> Please upload a photo of your business card, or click the button below to skip and fill the form manually.",
+        "Let's start by uploading a business card for automatic information extraction.\n\n"
+        "<b>Step 1/14:</b> Please upload a photo of the business card, or click the button below to skip and fill the form manually.",
         parse_mode="HTML",
         reply_markup=markup,
     )
