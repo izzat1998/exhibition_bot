@@ -54,11 +54,23 @@ async def cmd_lead(message: Message, state: FSMContext):
     """Start the lead form collection process."""
     await state.clear()
     await state.update_data(ocr_processed=False, extracted_data={})
+
+    # Create inline keyboard with Skip button
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text="⏩ Skip Business Card", callback_data="business_card:skip"
+            )
+        ]
+    ]
+    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+
     await message.answer(
         "📋 <b>Lead Information Form</b>\n\n"
         "Let's start by uploading your business card for automatic information extraction.\n\n"
-        "<b>Step 1/14:</b> Please upload a photo of your business card, or type 'skip' to fill the form manually.",
+        "<b>Step 1/14:</b> Please upload a photo of your business card, or click the button below to skip and fill the form manually.",
         parse_mode="HTML",
+        reply_markup=markup,
     )
     await state.set_state(LeadForm.business_card_photo)
 
