@@ -125,6 +125,7 @@ async def generate_summary(data: dict) -> str:
             filled_fields += 1
 
     # Shipment directions (special handling)
+    directions_filled = False
     if data.get("selected_directions") and data.get("available_directions"):
         selected_directions_ids = data.get("selected_directions", set())
         # Ensure selected_directions_ids is a set of strings for comparison
@@ -141,17 +142,14 @@ async def generate_summary(data: dict) -> str:
         ]
         if direction_names:
             summary += f"🗺️ <b>Directions:</b> {', '.join(direction_names)}\n"
+            directions_filled = True
             filled_fields += 1
 
-    if data.get("business_card_photo"):  # This is step 1 if present
+    # Business card handling
+    business_card_filled = bool(data.get("business_card_photo"))
+    if business_card_filled:
         summary += "📸 <b>Business Card:</b> Uploaded\n"
-        # Note: filled_fields for business_card_photo might be tricky if it's considered
-        # one of the 14 steps vs. an auxiliary item. The current logic in generate_summary
-        # implies it is one of the 14. If it's step 1, then `total_fields` calculation needs care.
-        # For simplicity, let's assume it contributes to filled_fields if present.
-        if not any(f in data for f in field_map.keys()):  # if only biz card is filled
-            if filled_fields == 0:
-                filled_fields += 1  # Avoid double counting if already counted
+        filled_fields += 1
 
     # Adjust filled_fields if business_card_photo was present but not counted by loop
     # This logic for filled_fields can be simplified if business_card is always step 1.
@@ -160,6 +158,7 @@ async def generate_summary(data: dict) -> str:
     progress_percentage = (
         int((filled_fields / total_fields) * 100) if total_fields > 0 else 0
     )
+
     progress_bar = (
         "\n\n<b>Progress:</b> ["
         + "█" * (progress_percentage // 10)
