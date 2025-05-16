@@ -19,14 +19,12 @@ confirmation_router = Router()
 
 @confirmation_router.callback_query(F.data == "lead:confirm")
 async def confirm_lead(callback: CallbackQuery, state: FSMContext):
-    # Edit the original message to show processing
-    await callback.message.edit_text(
+    data = await state.get_data()
+    await callback.message.edit_reply_markup(reply_markup=None)
+    processing_msg = await callback.message.answer(
         "<b>⏳ Processing...</b>\n\nSubmitting your lead information. Please wait.",
         parse_mode="HTML",
-        reply_markup=None,
     )
-
-    data = await state.get_data()
     config = load_config()
     lead_data_payload = {
         "telegram_id": str(callback.from_user.id),
@@ -63,7 +61,8 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
                     photo_bytes = await bot_instance.download_file(file_info.file_path)
                 except Exception as e_photo:
                     print(f"Error downloading business card photo: {e_photo}")
-                    # Continue without photo
+                    # Don't edit processing_msg here, let submission proceed without photo
+                    # or show a warning after submission attempt.
 
             status_code, api_response_msg = await api.create_lead(
                 lead_data_payload, photo_bytes
@@ -71,10 +70,13 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
 
         except Exception as e_submit:
             print(f"Error submitting lead to API: {e_submit}")
+            # status_code remains 500, api_response_msg might be generic
             api_response_msg = {"error": f"API submission error: {e_submit}"}
 
+    await processing_msg.delete()
+
     if status_code in (200, 201):
-        await callback.message.edit_text(
+        await callback.message.answer(
             "<b>✅ Success!</b>\n\nThank you! Your lead information has been submitted successfully.",
             parse_mode="HTML",
         )
@@ -82,11 +84,10 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
         error_detail = api_response_msg.get("detail") or api_response_msg.get(
             "error", "Unknown error"
         )
-        await callback.message.edit_text(
+        await callback.message.answer(
             f"<b>❌ Error!</b>\n\nThere was a problem submitting your lead information. Error: {error_detail}",
             parse_mode="HTML",
         )
-
     await state.clear()
     await callback.answer()
 
