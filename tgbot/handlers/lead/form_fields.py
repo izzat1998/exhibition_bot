@@ -587,20 +587,4 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
             callback.message, state
         )  # Pass callback.message to send new summary message
     else:
-        skip_keyboard = [
-            [
-                InlineKeyboardButton(
-                    text="Skip Business Card", callback_data="business_card:skip"
-                )
-            ]
-        ]
-        skip_markup = InlineKeyboardMarkup(inline_keyboard=skip_keyboard)
-        # Send a new message for the business card prompt
-        await callback.message.answer(
-            "<b>Final Step: Business Card</b>\n\n"
-            "Please upload a photo of your business card or use the button below to skip this step.",
-            parse_mode="HTML",
-            reply_markup=skip_markup,
-        )
-        await state.set_state(LeadForm.business_card_photo)
-    await callback.answer()
+        await callback.answer()
