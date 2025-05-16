@@ -173,7 +173,7 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
 
     elif prev_state_name == "cargo":
         prompt_text = (
-            f"{summary}\n\n<b>Step 9/14:</b> What type of cargo do you handle?"
+            f"{summary}\n\n<b>Step 9/14:</b> What type of cargo does company handle?"
         )
 
     elif prev_state_name == "mode_of_transport":

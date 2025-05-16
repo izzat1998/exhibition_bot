@@ -335,7 +335,7 @@ async def process_company_type(callback: CallbackQuery, state: FSMContext):
     )
 
     await callback.message.edit_text(
-        f"Selected company type: <b>{company_type_label}</b>\n\n{summary}\n\n<b>Step 9/14:</b> What type of cargo do you handle?",
+        f"Selected company type: <b>{company_type_label}</b>\n\n{summary}\n\n<b>Step 9/14:</b> What type of cargo does company handle?",
         parse_mode="HTML",
         reply_markup=next_step_markup,
     )
