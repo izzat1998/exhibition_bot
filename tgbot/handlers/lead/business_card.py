@@ -148,18 +148,57 @@ async def skip_business_card_text(message: Message, state: FSMContext):
         await show_summary(message, state)
 
 
-@business_card_router.callback_query(
-    LeadForm.business_card_photo, F.data == "business_card:skip"
-)
+@business_card_router.callback_query(F.data == "business_card:skip")
 async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
-    """Skip the business card photo upload using the inline button (at the end of form)."""
+    """Handle skip business card button for both initial and final form states."""
+    data = await state.get_data()
+
+    # Check if it's an initial skip (no other data collected beyond OCR flags)
+    is_initial_skip = not any(
+        key in data
+        for key in [
+            "full_name",
+            "position",
+            "phone_number",
+            "email",
+            "company_name",
+            "sphere_of_activity",
+            "company_type",
+            "cargo",
+            "mode_of_transport",
+            "shipment_volume",
+            "selected_directions",
+            "comments",
+            "meeting_place",
+        ]
+    )
+
     await state.update_data(
-        business_card_photo=None
-    )  # business_card_skipped might be true or false
+        business_card_photo=None,
+        ocr_processed=False,
+        business_card_skipped=True,
+        extracted_data={},
+    )
+
     await callback.message.edit_reply_markup(reply_markup=None)  # Remove skip button
-    await callback.message.answer("Business card photo upload skipped.")
-    await callback.answer()
-    await show_summary(callback.message, state)
+    await callback.answer("Business card photo upload skipped.")
+
+    if is_initial_skip:
+        # Go to the first form field (full name)
+        keyboard_rows = [
+            [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")]
+        ]
+        markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+        await callback.message.answer(
+            "<b>Manual form filling selected.</b>\n\n"
+            "<b>Step 2/14:</b> What is your full name?",
+            parse_mode="HTML",
+            reply_markup=markup,
+        )
+        await state.set_state(LeadForm.full_name)
+    else:
+        # At the end of form, show summary
+        await show_summary(callback.message, state)
 
 
 @business_card_router.message(StateFilter(LeadForm.business_card_photo), F.photo)
