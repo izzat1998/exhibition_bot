@@ -95,7 +95,7 @@ Let's start with the business card to automatically fill in contact details.
 
 <b>Step 1/14:</b> Upload a business card photo or type 'skip' to enter details manually.
         """
-        
+
         # Create inline keyboard with Skip button
         keyboard = [
             [
@@ -105,7 +105,7 @@ Let's start with the business card to automatically fill in contact details.
             ]
         ]
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
-        
+
         await msg_to_edit_or_answer.answer(
             instructions, parse_mode="HTML", reply_markup=markup
         )  # Send new message for this step
@@ -246,7 +246,9 @@ Let's start with the business card to automatically fill in contact details.
         )
 
     elif prev_state_name == "comments":
-        prompt_text = f"{summary}\n\n<b>Step 13/14:</b> Do you have any additional comments? (Type 'none' if you don't have any)"
+        prompt_text = (
+            f"{summary}\n\n<b>Step 13/14:</b> Do you have any additional comments?"
+        )
 
     elif prev_state_name == "meeting_place":
         prompt_text = (

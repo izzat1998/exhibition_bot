@@ -519,7 +519,7 @@ async def process_directions_done(callback: CallbackQuery, state: FSMContext):
 
     # Edit the current message
     await callback.message.edit_text(
-        f"Selected directions: <b>{', '.join(selected_names)}</b>\n\n{summary}\n\n<b>Step 13/14:</b> Do you have any additional comments? (Type 'none' if you don't have any)",
+        f"Selected directions: <b>{', '.join(selected_names)}</b>\n\n{summary}\n\n<b>Step 13/14:</b> Do you have any additional comments? ",
         parse_mode="HTML",
         reply_markup=next_step_markup,  # Keyboard for the next step
     )
