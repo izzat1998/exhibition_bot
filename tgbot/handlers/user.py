@@ -66,7 +66,7 @@ async def show_company_selection(message: Message, api: MyApi):
     status, companies = await api.get_companies()
 
     if status != 200 or not companies:
-        await message.reply("Unable to fetch companies. Please try again later.")
+        await message.answer("Unable to fetch companies. Please try again later.")
         return
 
     # Create inline keyboard with companies
