@@ -14,9 +14,9 @@ def get_main_keyboard() -> ReplyKeyboardMarkup:
     """
     keyboard = [
         [
-            KeyboardButton(text="🔄 /start"),
-            KeyboardButton(text="📋 /lead"),
-            KeyboardButton(text="❓ /help"),
+            KeyboardButton(text="🔄 Start"),
+            KeyboardButton(text="📋 Lead"),
+            KeyboardButton(text="❓ Help"),
         ]
     ]
     return ReplyKeyboardMarkup(

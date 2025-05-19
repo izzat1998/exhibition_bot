@@ -14,6 +14,11 @@ from tgbot.utils.keyboards import get_main_keyboard
 
 user_router = Router()
 
+# Define text patterns for button messages
+START_BUTTON_PATTERNS = ["🔄 Start", "Start"]
+LEAD_BUTTON_PATTERNS = ["📋 Lead", "Lead"]
+HELP_BUTTON_PATTERNS = ["❓ Help", "Help"]
+
 
 @user_router.message(CommandStart())
 async def user_start(message: Message):
@@ -151,7 +156,7 @@ async def register_with_company(callback: CallbackQuery):
                 # Send a new message with the main keyboard
                 await callback.message.answer(
                     "Use the buttons below for quick access to commands:",
-                    reply_markup=get_main_keyboard()
+                    reply_markup=get_main_keyboard(),
                 )
             else:
                 # Edit the original message to show the error with retry option
@@ -181,3 +186,31 @@ async def retry_registration(callback: CallbackQuery):
         reply_markup=None
     )  # Remove the retry button
     await show_company_selection(callback.message, MyApi(config=load_config()))
+
+
+# Button text handlers
+@user_router.message(F.text.in_(START_BUTTON_PATTERNS))
+async def handle_start_button(message: Message):
+    """Handle 'Start' button text as /start command"""
+    await user_start(message)
+
+
+@user_router.message(F.text.in_(LEAD_BUTTON_PATTERNS))
+async def handle_lead_button(message: Message):
+    """Handle 'Lead' button text by forwarding to lead command handler"""
+    # Import here to avoid circular imports
+    # Forward to the lead command handler
+    from aiogram.fsm.context import FSMContext
+
+    from tgbot.handlers.lead.business_card import cmd_lead
+
+    state = FSMContext(
+        bot=message.bot, chat_id=message.chat.id, user_id=message.from_user.id
+    )
+    await cmd_lead(message, state)
+
+
+@user_router.message(F.text.in_(HELP_BUTTON_PATTERNS))
+async def handle_help_button(message: Message):
+    """Handle 'Help' button text as /help command"""
+    await help_command(message)
