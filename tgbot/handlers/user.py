@@ -20,14 +20,31 @@ async def user_start(message: Message):
         async with MyApi(config=config) as api:
             status, result = await api.login(telegram_id=message.from_user.id)
             if status == 200:
-                await message.reply(
-                    """
-Welcome back! Use /lead to start the lead form.
-📎 Please send a photo of your business card.
-Tap the paperclip (📎) icon ➡️ Choose “Gallery” or “File” ➡️ Select your photo.
-                """
+                # User is already registered
+                await message.answer(
+                    f"""
+👋 Welcome back, {message.from_user.first_name}!
+
+📝 <b>How to use this bot:</b>
+1️⃣ Type /lead to start collecting information about a potential lead
+2️⃣ Send a photo of your business card when prompted
+3️⃣ Follow the guided process to complete the lead form
+
+Need help? Type /help to see all available commands.
+                    """,
+                    parse_mode="HTML",
                 )
             else:
+                # User needs to register first
+                await message.answer(
+                    f"""
+👋 Hello {message.from_user.first_name}!
+
+Welcome to the Exhibition Lead Collection Bot. 
+Before you can start collecting leads, you need to register with your company.
+                    """
+                )
+                # Show company selection for registration
                 await show_company_selection(message, api)
     except Exception as e:
         await message.answer("An error occurred. Please try again later.")
