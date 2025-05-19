@@ -73,10 +73,41 @@ async def handle_back_navigation(message_or_callback, state: FSMContext):
     prompt_text = ""
 
     if prev_state_name == "business_card_photo":
-        prompt_text = f"{summary}\n\n<b>Step 1/14:</b> Please upload a photo of the business card, or type 'skip' to fill the form manually."
-        # No specific keyboard beyond what might be implicitly handled by photo/text input
+        # Use the same detailed instructions as in cmd_lead
+        instructions = f"{summary}\n\n"
+        instructions += """
+📋 <b>Lead Information Form</b>
+
+Let's start with the business card to automatically fill in contact details.
+
+<b>📸 How to upload a business card photo:</b>
+1️⃣ Tap the paperclip (📎) icon below
+2️⃣ Select "Photo" or "Gallery"
+3️⃣ Choose a clear photo of the business card
+4️⃣ Make sure all text is readable and not blurry
+5️⃣ Tap "Send" to upload
+
+<b>💡 Tips for best results:</b>
+• Take the photo in good lighting
+• Keep the card flat and in frame
+• Avoid shadows and glare
+• Make sure all text is visible
+
+<b>Step 1/14:</b> Upload a business card photo or type 'skip' to enter details manually.
+        """
+        
+        # Create inline keyboard with Skip button
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    text="⏩ Skip Business Card", callback_data="business_card:skip"
+                )
+            ]
+        ]
+        markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+        
         await msg_to_edit_or_answer.answer(
-            prompt_text, parse_mode="HTML"
+            instructions, parse_mode="HTML", reply_markup=markup
         )  # Send new message for this step
 
     elif prev_state_name == "full_name":
