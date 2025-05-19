@@ -225,6 +225,66 @@ async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
         await show_summary(callback.message, state)
 
 
+@business_card_router.message(StateFilter(LeadForm.business_card_photo), F.text)
+async def process_skip_text(message: Message, state: FSMContext):
+    """Handle text messages during business card photo state, including 'skip'."""
+    # Check if the message is a variation of 'skip'
+    if message.text.lower().strip() in ["skip", "skip card", "skip business card"]:
+        # Use the same logic as the skip button
+        data = await state.get_data()
+
+        # Check if it's an initial skip (no other data collected beyond OCR flags)
+        is_initial_skip = not any(
+            key in data
+            for key in [
+                "full_name",
+                "position",
+                "phone_number",
+                "email",
+                "company_name",
+                "sphere_of_activity",
+                "company_type",
+                "cargo",
+                "mode_of_transport",
+                "shipment_volume",
+                "selected_directions",
+                "comments",
+                "meeting_place",
+            ]
+        )
+
+        await state.update_data(
+            business_card_photo=None,
+            ocr_processed=False,
+            business_card_skipped=True,
+            extracted_data={},
+        )
+
+        if is_initial_skip:
+            # Go to the first form field (full name)
+            keyboard_rows = [
+                [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")]
+            ]
+            markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+            await message.answer(
+                "<b>Manual form filling selected.</b>\n\n"
+                "<b>Step 2/14:</b> What is your full name?",
+                parse_mode="HTML",
+                reply_markup=markup,
+            )
+            await state.set_state(LeadForm.full_name)
+        else:
+            # At the end of form, show summary
+            await show_summary(message, state)
+    else:
+        # If it's not a skip command, inform the user we're expecting a photo
+        await message.answer(
+            "📸 <b>Please upload a business card photo</b> or use the 'Skip Business Card' button.\n\n"
+            "If you want to skip, you can also type 'skip'.",
+            parse_mode="HTML",
+        )
+
+
 @business_card_router.message(StateFilter(LeadForm.business_card_photo), F.photo)
 async def process_business_card_photo(message: Message, state: FSMContext):
     """Process the business card photo (can be at start or end of form)."""
