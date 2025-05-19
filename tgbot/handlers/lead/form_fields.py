@@ -461,7 +461,7 @@ async def process_direction_selection(callback: CallbackQuery, state: FSMContext
         if dir_id_str and dir_name:
             if dir_id_str == direction_id_selected:
                 selected_direction_name = dir_name
-            prefix = "✅ " if dir_id_str in current_selected_ids else ""
+            prefix = "☑️ " if dir_id_str in current_selected_ids else ""
             keyboard_rows.append(
                 [
                     InlineKeyboardButton(
