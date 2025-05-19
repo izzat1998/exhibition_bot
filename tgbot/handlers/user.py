@@ -20,9 +20,14 @@ async def user_start(message: Message):
         async with MyApi(config=config) as api:
             status, result = await api.login(telegram_id=message.from_user.id)
             if status == 200:
-                await message.reply("Welcome back! Use /lead to start the lead form.")
+                await message.reply(
+                    """
+Welcome back! Use /lead to start the lead form.
+📎 Please send a photo of your business card.
+Tap the paperclip (📎) icon ➡️ Choose “Gallery” or “File” ➡️ Select your photo.
+                """
+                )
             else:
-                # User not registered, fetch companies and show selection
                 await show_company_selection(message, api)
     except Exception as e:
         await message.answer("An error occurred. Please try again later.")
