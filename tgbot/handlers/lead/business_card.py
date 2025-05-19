@@ -51,7 +51,12 @@ async def show_summary(message: Message, state: FSMContext):
 
 @business_card_router.message(Command(commands=["lead"]))
 async def cmd_lead(message: Message, state: FSMContext):
-    """Start the lead form collection process."""
+    """
+    Start the lead form collection process with business card photo upload.
+
+    This is the entry point for collecting new lead information, starting with
+    an optional business card scan that can automatically fill in contact details.
+    """
     await state.clear()
     await state.update_data(ocr_processed=False, extracted_data={})
 
@@ -65,10 +70,29 @@ async def cmd_lead(message: Message, state: FSMContext):
     ]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
+    instructions = """
+📋 <b>Lead Information Form</b>
+
+Let's start with the business card to automatically fill in contact details.
+
+<b>📸 How to upload a business card photo:</b>
+1️⃣ Tap the paperclip (📎) icon below
+2️⃣ Select "Photo" or "Gallery"
+3️⃣ Choose a clear photo of the business card
+4️⃣ Make sure all text is readable and not blurry
+5️⃣ Tap "Send" to upload
+
+<b>💡 Tips for best results:</b>
+• Take the photo in good lighting
+• Keep the card flat and in frame
+• Avoid shadows and glare
+• Make sure all text is visible
+
+<b>Step 1/14:</b> Upload a business card photo or skip to enter details manually.
+    """
+
     await message.answer(
-        "📋 <b>Lead Information Form</b>\n\n"
-        "Let's start by uploading a business card for automatic information extraction.\n\n"
-        "<b>Step 1/14:</b> Please upload a photo of the business card, or click the button below to skip and fill the form manually.",
+        instructions,
         parse_mode="HTML",
         reply_markup=markup,
     )
