@@ -16,7 +16,6 @@ user_router = Router()
 
 # Define text patterns for button messages
 START_BUTTON_PATTERNS = ["🔄 Start", "Start"]
-LEAD_BUTTON_PATTERNS = ["📋 Lead", "Lead"]
 HELP_BUTTON_PATTERNS = ["❓ Help", "Help"]
 
 
@@ -195,27 +194,7 @@ async def handle_start_button(message: Message):
     await user_start(message)
 
 
-@user_router.message(F.text.in_(LEAD_BUTTON_PATTERNS))
-async def handle_lead_button(message: Message):
-    """Handle 'Lead' button text by directly invoking the lead command handler"""
-    # Get the state for this user
-    from aiogram.fsm.context import FSMContext
-    from aiogram.fsm.storage.memory import MemoryStorage
-
-    # Import the lead command handler
-    from tgbot.handlers.lead.business_card import cmd_lead
-
-    # Get the bot instance
-    bot = message.bot
-
-    # Create a state context for this user
-    storage = bot.fsm_storage or MemoryStorage()
-    state = FSMContext(
-        storage=storage, bot=bot, chat_id=message.chat.id, user_id=message.from_user.id
-    )
-
-    # Directly invoke the lead command handler
-    await cmd_lead(message, state)
+# Lead button handler removed to simplify the interface
 
 
 @user_router.message(F.text.in_(HELP_BUTTON_PATTERNS))
