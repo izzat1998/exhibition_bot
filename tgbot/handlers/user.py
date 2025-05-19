@@ -27,7 +27,11 @@ async def user_start(message: Message):
 
 📝 <b>How to use this bot:</b>
 1️⃣ Type /lead to start collecting information about a potential lead
-2️⃣ Send a photo of your business card when prompted
+2️⃣ Send a photo of your business card when prompted:
+   • 📎 Tap the paperclip icon at the bottom
+   • 📷 Select "Photo" or "Gallery"
+   • ✅ Choose your business card photo
+   • ➡️ Send the photo
 3️⃣ Follow the guided process to complete the lead form
 
 Need help? Type /help to see all available commands.
@@ -42,7 +46,13 @@ Need help? Type /help to see all available commands.
 
 Welcome to the Exhibition Lead Collection Bot. 
 Before you can start collecting leads, you need to register with your company.
-                    """
+
+<b>After registration, you'll be able to:</b>
+• 📸 Send business card photos
+• 📋 Fill out lead forms
+• 📊 Track your exhibition leads
+                    """,
+                    parse_mode="HTML",
                 )
                 # Show company selection for registration
                 await show_company_selection(message, api)
