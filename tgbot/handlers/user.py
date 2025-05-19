@@ -5,10 +5,12 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    ReplyKeyboardRemove,
 )
 
 from infrastructure.some_api.api import MyApi
 from tgbot.config import load_config
+from tgbot.utils.keyboards import get_main_keyboard
 
 user_router = Router()
 
@@ -37,6 +39,7 @@ async def user_start(message: Message):
 Need help? Type /help to see all available commands.
                     """,
                     parse_mode="HTML",
+                    reply_markup=get_main_keyboard(),
                 )
             else:
                 # User needs to register first
@@ -53,6 +56,7 @@ Before you can start collecting leads, you need to register with your company.
 • 📊 Track your exhibition leads
                     """,
                     parse_mode="HTML",
+                    reply_markup=ReplyKeyboardRemove(),
                 )
                 # Show company selection for registration
                 await show_company_selection(message, api)
@@ -92,7 +96,7 @@ Contact our support team:
 • New lead: <code>/lead</code>
 • Show help: <code>/help</code>
 """
-    await message.answer(help_text, parse_mode="HTML")
+    await message.answer(help_text, parse_mode="HTML", reply_markup=get_main_keyboard())
 
 
 async def show_company_selection(message: Message, api: MyApi):
@@ -143,6 +147,11 @@ async def register_with_company(callback: CallbackQuery):
                 await callback.message.edit_text(
                     "✅ Registration successful! Welcome to the system.\n\n"
                     "You can now use the /lead command to start the lead form."
+                )
+                # Send a new message with the main keyboard
+                await callback.message.answer(
+                    "Use the buttons below for quick access to commands:",
+                    reply_markup=get_main_keyboard()
                 )
             else:
                 # Edit the original message to show the error with retry option
