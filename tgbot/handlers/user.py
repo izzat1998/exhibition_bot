@@ -63,13 +63,36 @@ Before you can start collecting leads, you need to register with your company.
 
 @user_router.message(Command("help"))
 async def help_command(message: Message):
-    help_text = (
-        "Available commands:\n"
-        "/start - Start the bot\n"
-        "/lead - Start the lead form\n"
-        "/help - Show this help message"
-    )
-    await message.answer(help_text)
+    help_text = """
+🌟 <b>Exhibition Lead Collection Bot</b> - Help Center
+
+<u>Quick Start Guide</u>
+
+🚀 <b>Getting Started</b>
+• <code>/start</code> - Begin your session
+• <code>/help</code>  - Show this help message anytime
+
+📊 <b>Collecting Leads</b>
+• <code>/lead</code> - Start a new lead collection
+  - Take a photo of a business card
+  - Or manually enter details
+  - Follow the simple form
+
+✨ <b>Pro Tips</b>
+• Use natural light when photographing business cards
+• Ensure all text is clear and visible in photos
+• You can edit any information after scanning
+
+📞 <b>Need Help?</b>
+Contact our support team:
+📧 izzatbek.khamraev@interrail.ag
+
+🔍 <b>Quick Actions</b>
+• Restart bot: <code>/start</code>
+• New lead: <code>/lead</code>
+• Show help: <code>/help</code>
+"""
+    await message.answer(help_text, parse_mode="HTML")
 
 
 async def show_company_selection(message: Message, api: MyApi):
