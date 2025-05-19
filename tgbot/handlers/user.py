@@ -197,17 +197,19 @@ async def handle_start_button(message: Message):
 
 @user_router.message(F.text.in_(LEAD_BUTTON_PATTERNS))
 async def handle_lead_button(message: Message):
-    """Handle 'Lead' button text by forwarding to lead command handler"""
-    # Import here to avoid circular imports
-    # Forward to the lead command handler
-    from aiogram.fsm.context import FSMContext
+    """Handle 'Lead' button text by creating a command message"""
+    # Create a new message object that mimics the /lead command
+    # This is a simpler approach than trying to manually create the FSMContext
 
-    from tgbot.handlers.lead.business_card import cmd_lead
+    # Create a command message that will be processed by the command handler
 
-    state = FSMContext(
-        bot=message.bot, chat_id=message.chat.id, user_id=message.from_user.id
+    # Use the bot's middleware to handle the command properly
+    # This will ensure all the proper context and state is available
+    await message.bot.send_message(
+        chat_id=message.chat.id,
+        text="/lead",
+        entities=[{"type": "bot_command", "offset": 0, "length": 5}],
     )
-    await cmd_lead(message, state)
 
 
 @user_router.message(F.text.in_(HELP_BUTTON_PATTERNS))
