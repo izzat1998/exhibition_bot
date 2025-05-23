@@ -143,7 +143,7 @@ Let's start with the business card to automatically fill in contact details.
             )
 
     elif prev_state_name == "phone_number":
-        prompt_text = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number?"
+        prompt_text = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number? (enter personal and office number using '/' between them)"
         phone_val = extracted_data.get("phone") or extracted_data.get("phone_number")
         if ocr_processed and phone_val:
             safe_val = truncate_for_callback(

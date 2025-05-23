@@ -484,7 +484,7 @@ async def ocr_confirm_cb(callback: CallbackQuery, state: FSMContext):
     elif not data.get(
         "phone_number"
     ):  # This implies extracted phone was invalid or not present
-        next_step_message = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number?"
+        next_step_message = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number (enter personal and office number using '/' between them)?"
         next_fsm_state = LeadForm.phone_number
     elif not data.get("email"):  # Implies extracted email was invalid or not present
         next_step_message = f"{summary}\n\n<b>Step 5/14:</b> What is the email address?"
