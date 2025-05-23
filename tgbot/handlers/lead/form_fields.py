@@ -179,7 +179,7 @@ async def process_position(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 4/14:</b> What is the phone number (enter private and office number by /)?",
+        f"{summary}\n\n<b>Step 4/14:</b> What is the phone number (enter personal and office number using '/' between them)",
         parse_mode="HTML",
         reply_markup=markup,
     )
