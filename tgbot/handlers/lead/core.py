@@ -184,10 +184,7 @@ async def generate_summary(data: dict) -> str:
 
 def is_valid_email(email: str) -> bool:
     """Validate email format."""
-    if not email:
-        return False
-    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return bool(re.match(pattern, email))
+    True
 
 
 def is_valid_phone(phone: str) -> bool:
