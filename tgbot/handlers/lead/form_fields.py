@@ -214,6 +214,9 @@ async def process_phone_number(message: Message, state: FSMContext):
             ]
         )
     keyboard_rows.append(
+        [InlineKeyboardButton(text="Skip Email", callback_data="skip:email")]
+    )
+    keyboard_rows.append(
         [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")]
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
@@ -225,11 +228,49 @@ async def process_phone_number(message: Message, state: FSMContext):
     await state.set_state(LeadForm.email)
 
 
+@form_fields_router.callback_query(LeadForm.email, F.data == "skip:email")
+async def skip_email(callback: CallbackQuery, state: FSMContext):
+    # Set empty email and proceed to next step
+    await state.update_data(email="")
+    data = await state.get_data()
+    summary = await generate_summary(data)
+    extracted_data = data.get("extracted_data", {})
+    keyboard_rows = []
+    if data.get("ocr_processed") and extracted_data.get("company_name"):
+        val = extracted_data.get("company_name")
+        safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["company"])
+        keyboard_rows.append(
+            [
+                InlineKeyboardButton(
+                    text=f"Use: {val}",
+                    callback_data=f"use_suggestion:company:{safe_val}",
+                )
+            ]
+        )
+    keyboard_rows.append(
+        [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")]
+    )
+    markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+    
+    await callback.message.edit_text(
+        f"Email skipped.\n\n{summary}\n\n<b>Step 6/14:</b> What is the company name?",
+        parse_mode="HTML",
+        reply_markup=markup,
+    )
+    await state.set_state(LeadForm.company_name)
+    await callback.answer()
+
+
 @form_fields_router.message(StateFilter(LeadForm.email))
 async def process_email(message: Message, state: FSMContext):
     if is_empty_or_whitespace(message.text):
         await message.answer(
             "❌ <b>Error:</b> Email cannot be empty.", parse_mode="HTML"
+        )
+        return
+    if not is_valid_email(message.text):
+        await message.answer(
+            "❌ <b>Error:</b> Invalid email format.", parse_mode="HTML"
         )
         return
     await state.update_data(email=message.text)
