@@ -62,25 +62,38 @@ class MyApi(BaseClient):
         )
         return status, result
 
-    async def create_lead(self, data: dict, business_card_photo_data=None, *args, **kwargs):
+    async def get_exhibitions(self, *args, **kwargs):
+        headers = {"X-Telegram-Bot-API-Token": self.api_key}
+        status, result = await self._make_request(
+            method="GET",
+            url="/api/leads/categories/list_via_telegram/",
+            headers=headers,
+            *args,
+            **kwargs,
+        )
+        return status, result
+
+    async def create_lead(
+        self, data: dict, business_card_photo_data=None, *args, **kwargs
+    ):
         """Create a lead with optional business card photo.
-        
+
         Args:
             data: Dictionary containing lead data
             business_card_photo_data: Optional file data for business card photo
-            
+
         Returns:
             Tuple of (status_code, response_data)
         """
         headers = {"X-Telegram-Bot-API-Token": self.api_key}
-        
+
         if business_card_photo_data:
             # If we have a photo, use multipart form data
             from aiohttp import FormData
-            
+
             # Create form data with all lead fields
             form = FormData()
-            
+
             # Add all text fields from data dictionary
             for key, value in data.items():
                 # Handle lists (like shipment_directions) by adding multiple fields with same name
@@ -89,7 +102,7 @@ class MyApi(BaseClient):
                         form.add_field(key, str(item))
                 else:
                     form.add_field(key, str(value) if value is not None else "")
-            
+
             # Add the business card photo
             form.add_field(
                 "business_card_photo",
@@ -97,7 +110,7 @@ class MyApi(BaseClient):
                 filename="business_card.jpg",
                 content_type="image/jpeg",
             )
-            
+
             # Make the request with form data
             status, result = await self._make_request(
                 method="POST",
@@ -117,7 +130,7 @@ class MyApi(BaseClient):
                 *args,
                 **kwargs,
             )
-            
+
         return status, result
 
     async def business_card_photo_ocr(self, file_data, *args, **kwargs):

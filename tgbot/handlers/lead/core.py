@@ -59,6 +59,7 @@ async def get_previous_state(current_state: str) -> Optional[str]:
     Returns the name of the previous state in the form flow.
     """
     state_flow = [
+        "exhibition_selection",
         "business_card_photo",
         "full_name",
         "position",
@@ -94,10 +95,11 @@ async def generate_summary(data: dict) -> str:
     Only shows fields that have been filled in.
     """
     summary = "📋 <b>Lead Information Summary</b>\n\n"
-    total_fields = 14
+    total_fields = 15  # Updated to include exhibition
     filled_fields = 0
 
     field_map = {
+        "exhibition": ("🎪 <b>Exhibition:</b>", None),
         "full_name": ("📝 <b>Full Name:</b>", None),
         "position": ("🏢 <b>Position in the company:</b>", None),
         "phone_number": ("📱 <b>Phone number:</b>", None),

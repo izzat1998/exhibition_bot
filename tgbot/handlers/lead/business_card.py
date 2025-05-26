@@ -52,28 +52,106 @@ async def show_summary(message: Message, state: FSMContext):
 @business_card_router.message(Command(commands=["lead"]))
 async def cmd_lead(message: Message, state: FSMContext):
     """
-    Start the lead form collection process with business card photo upload.
+    Start the lead form collection process with exhibition selection.
 
     This is the entry point for collecting new lead information, starting with
-    an optional business card scan that can automatically fill in contact details.
+    selecting the exhibition, followed by an optional business card scan.
     """
     await state.clear()
     await state.update_data(ocr_processed=False, extracted_data={})
 
-    # Create inline keyboard with Skip button
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                text="⏩ Skip Business Card", callback_data="business_card:skip"
-            )
-        ]
-    ]
-    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+    # Load exhibitions from API
+    config = load_config()
 
-    instructions = """
+    try:
+        async with MyApi(config=config) as api:
+            status, response = await api.get_exhibitions()
+
+            if status == 200 and "results" in response and response["results"]:
+                # Create keyboard with exhibition options
+                keyboard_rows = []
+
+                for exhibition in response["results"]:
+                    exhibition_id = exhibition["id"]
+                    exhibition_name = exhibition["name"]
+                    keyboard_rows.append(
+                        [
+                            InlineKeyboardButton(
+                                text=exhibition_name,
+                                callback_data=f"exhibition:{exhibition_id}:{exhibition_name}",
+                            )
+                        ]
+                    )
+
+                # Add back button
+                keyboard_rows.append(
+                    [InlineKeyboardButton(text="⬅️ Cancel", callback_data="lead:cancel")]
+                )
+
+                markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+
+                instructions = """
 📋 <b>Lead Information Form</b>
 
-Let's start with the business card to automatically fill in contact details.
+Let's start by selecting the exhibition where you met this lead.
+
+<b>Step 1/15:</b> Please select the exhibition from the list below.
+                """
+
+                await message.answer(
+                    instructions,
+                    parse_mode="HTML",
+                    reply_markup=markup,
+                )
+                await state.set_state(LeadForm.exhibition_selection)
+            else:
+                # If API call fails or no exhibitions, show error and cancel form
+                await message.answer(
+                    "❌ <b>Error:</b> Unable to retrieve exhibitions. Please try again later.",
+                    parse_mode="HTML",
+                )
+    except Exception as e:
+        # Handle any exceptions
+        await message.answer(
+            "❌ <b>Error:</b> Something went wrong. Please try again later.",
+            parse_mode="HTML",
+        )
+        print(f"Error in cmd_lead: {e}")
+
+
+@business_card_router.callback_query(F.data.startswith("exhibition:"))
+async def exhibition_selected(callback: CallbackQuery, state: FSMContext):
+    """
+    Handle exhibition selection and proceed to business card photo step.
+    """
+    await callback.answer()
+
+    # Extract exhibition ID and name from callback data
+    # Format: "exhibition:id:name"
+    parts = callback.data.split(":")
+    if len(parts) >= 3:
+        exhibition_id = parts[1]
+        exhibition_name = ":".join(parts[2:])  # Handle names with colons
+
+        # Save exhibition data to state
+        await state.update_data(exhibition_id=exhibition_id, exhibition=exhibition_name)
+
+        # Create inline keyboard with Skip button for business card
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    text="⏩ Skip Business Card", callback_data="business_card:skip"
+                )
+            ]
+        ]
+        markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+        instructions = f"""
+📋 <b>Lead Information Form</b>
+
+<b>Selected Exhibition:</b> {exhibition_name}
+
+Now, let's continue with the business card to automatically fill in contact details.
 
 <b>📸 How to upload a business card photo:</b>
 1️⃣ Tap the paperclip (📎) icon below
@@ -88,15 +166,22 @@ Let's start with the business card to automatically fill in contact details.
 • Avoid shadows and glare
 • Make sure all text is visible
 
-<b>Step 1/14:</b> Upload a business card photo or skip to enter details manually.
-    """
+<b>Step 2/15:</b> Upload a business card photo or skip to enter details manually.
+        """
 
-    await message.answer(
-        instructions,
-        parse_mode="HTML",
-        reply_markup=markup,
-    )
-    await state.set_state(LeadForm.business_card_photo)
+        # Edit the original message to show business card instructions
+        await callback.message.edit_text(
+            instructions,
+            parse_mode="HTML",
+            reply_markup=markup,
+        )
+        await state.set_state(LeadForm.business_card_photo)
+    else:
+        # Handle invalid callback data
+        await callback.message.edit_text(
+            "❌ <b>Error:</b> Invalid exhibition selection. Please try again.",
+            parse_mode="HTML",
+        )
 
 
 @business_card_router.message(
@@ -159,7 +244,7 @@ async def skip_business_card_text(message: Message, state: FSMContext):
 
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
         await message.answer(
-            "<b>Step 2/14:</b> What is your full name?",
+            "<b>Step 3/15:</b> What is your full name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
@@ -215,7 +300,7 @@ async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
         await callback.message.answer(
             "<b>Manual form filling selected.</b>\n\n"
-            "<b>Step 2/14:</b> What is your full name?",
+            "<b>Step 3/15:</b> What is your full name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
@@ -268,7 +353,7 @@ async def process_skip_text(message: Message, state: FSMContext):
             markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
             await message.answer(
                 "<b>Manual form filling selected.</b>\n\n"
-                "<b>Step 2/14:</b> What is your full name?",
+                "<b>Step 3/15:</b> What is your full name?",
                 parse_mode="HTML",
                 reply_markup=markup,
             )

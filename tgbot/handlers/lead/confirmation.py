@@ -36,6 +36,7 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
     config = load_config()
     lead_data_payload = {
         "telegram_id": str(callback.from_user.id),
+        "category_id": data.get("exhibition_id"),
         "full_name": data.get("full_name"),
         "position": data.get("position"),
         "phone_number": data.get("phone_number"),

@@ -1,5 +1,6 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
+from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -17,6 +18,7 @@ user_router = Router()
 # Define text patterns for button messages
 START_BUTTON_PATTERNS = ["🔄 Start", "Start"]
 HELP_BUTTON_PATTERNS = ["❓ Help", "Help"]
+LEAD_BUTTON_PATTERNS = ["📝 New Lead", "Lead"]
 
 
 @user_router.message(CommandStart())
@@ -194,7 +196,12 @@ async def handle_start_button(message: Message):
     await user_start(message)
 
 
-# Lead button handler removed to simplify the interface
+@user_router.message(F.text.in_(LEAD_BUTTON_PATTERNS))
+async def handle_lead_button(message: Message, state: FSMContext = None):
+    """Handle 'Lead' button text as /lead command"""
+    # Import cmd_lead from the business_card module
+    from tgbot.handlers.lead.business_card import cmd_lead
+    await cmd_lead(message, state)
 
 
 @user_router.message(F.text.in_(HELP_BUTTON_PATTERNS))

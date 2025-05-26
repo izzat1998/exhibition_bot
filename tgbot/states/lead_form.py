@@ -4,6 +4,9 @@ from aiogram.fsm.state import State, StatesGroup
 class LeadForm(StatesGroup):
     """States for the lead form collection process."""
 
+    # Exhibition selection
+    exhibition_selection = State()
+    
     # Start with business card for OCR
     business_card_photo = State()
     ocr_confirmation = State()
