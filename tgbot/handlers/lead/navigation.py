@@ -171,6 +171,10 @@ Let's start with the business card to automatically fill in contact details.
                     )
                 ]
             )
+        # Add skip email button
+        keyboard_rows.append(
+            [InlineKeyboardButton(text="Skip Email", callback_data="skip:email")]
+        )
 
     elif prev_state_name == "company_name":
         prompt_text = f"{summary}\n\n<b>Step 6/14:</b> What is the company name?"
