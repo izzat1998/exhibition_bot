@@ -34,3 +34,6 @@ class LeadForm(StatesGroup):
 
     # Meeting information
     meeting_place = State()
+    
+    # Lead importance
+    importance = State()

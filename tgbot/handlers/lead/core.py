@@ -74,6 +74,7 @@ async def get_previous_state(current_state: str) -> Optional[str]:
         "shipment_directions",
         "comments",
         "meeting_place",
+        "importance",
     ]
 
     # Special handling for transient states
@@ -95,9 +96,16 @@ async def generate_summary(data: dict) -> str:
     Only shows fields that have been filled in.
     """
     summary = "📋 <b>Lead Information Summary</b>\n\n"
-    total_fields = 15  # Updated to include exhibition
+    total_fields = 16  # Updated to include exhibition and importance
     filled_fields = 0
 
+    # Define importance choices for display
+    IMPORTANCE_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+    ]
+    
     field_map = {
         "exhibition": ("🎪 <b>Exhibition:</b>", None),
         "full_name": ("📝 <b>Full Name:</b>", None),
@@ -113,6 +121,7 @@ async def generate_summary(data: dict) -> str:
         # shipment_directions is handled specially
         "comments": ("💬 <b>Comments:</b>", None),
         "meeting_place": ("🤝 <b>Meeting place:</b>", None),
+        "importance": ("📌 <b>Lead importance:</b>", IMPORTANCE_CHOICES),
     }
 
     for key, (label_prefix, choices) in field_map.items():

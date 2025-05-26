@@ -557,7 +557,7 @@ async def process_comments(message: Message, state: FSMContext):
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
 
     await message.answer(
-        f"{confirmation_msg}\n\n{summary}\n\n<b>Step 14/14:</b> Where did the meeting take place?",
+        f"{confirmation_msg}\n\n{summary}\n\n<b>Step 14/15:</b> Where did the meeting take place?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -576,22 +576,24 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
     if data.get("business_card_photo") or data.get("business_card_skipped"):
-        # Show summary in the same message
-        summary_text = await generate_summary(await state.get_data())
-        final_text = f"{summary_text}\n\n<b>✅ Lead Information Complete</b>\n\nPlease review the information above and confirm if it's correct."
-
+        # Proceed to importance selection
+        summary = await generate_summary(data)
+        
+        # Create keyboard with importance options
         keyboard_rows = [
-            [InlineKeyboardButton(text="✅ Confirm", callback_data="lead:confirm")],
-            [InlineKeyboardButton(text="❌ Cancel", callback_data="lead:cancel")],
-            [InlineKeyboardButton(text="🔄 Restart", callback_data="lead:restart")],
+            [InlineKeyboardButton(text="🟢 Low", callback_data="importance:low")],
+            [InlineKeyboardButton(text="🟡 Medium", callback_data="importance:medium")],
+            [InlineKeyboardButton(text="🔴 High", callback_data="importance:high")],
+            [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")],
         ]
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
-
+        
         await callback.message.edit_text(
-            f"Meeting place saved: <b>{meeting_place_label}</b>\n\n{final_text}",
+            f"Meeting place saved: <b>{meeting_place_label}</b>\n\n{summary}\n\n<b>Step 15/16:</b> How would you rate the importance of this lead?",
             parse_mode="HTML",
             reply_markup=markup,
         )
+        await state.set_state(LeadForm.importance)
     else:
         # Handle case where business card is not skipped
         keyboard_rows = [
@@ -612,4 +614,42 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
         )
         await state.set_state(LeadForm.business_card_photo)
 
+    await callback.answer()
+@form_fields_router.callback_query(
+    LeadForm.importance, F.data.startswith("importance:")
+)
+async def process_importance(callback: CallbackQuery, state: FSMContext):
+    """Process the lead importance selection and show the final summary."""
+    importance_val = callback.data.split(":")[1]
+    importance_label_map = {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+    }
+    importance_label = importance_label_map.get(importance_val, "Unknown")
+    
+    # Save importance to state
+    await state.update_data(importance=importance_val)
+    
+    # Get updated data and generate summary
+    data = await state.get_data()
+    summary_text = await generate_summary(data)
+    
+    # Create final confirmation buttons
+    keyboard_rows = [
+        [InlineKeyboardButton(text="✅ Confirm", callback_data="lead:confirm")],
+        [InlineKeyboardButton(text="❌ Cancel", callback_data="lead:cancel")],
+        [InlineKeyboardButton(text="🔄 Restart", callback_data="lead:restart")],
+    ]
+    markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
+    
+    # Show final summary with confirmation options
+    final_text = f"{summary_text}\n\n<b>✅ Lead Information Complete</b>\n\nPlease review the information above and confirm if it's correct."
+    
+    await callback.message.edit_text(
+        f"Lead importance saved: <b>{importance_label}</b>\n\n{final_text}",
+        parse_mode="HTML",
+        reply_markup=markup,
+    )
+    
     await callback.answer()

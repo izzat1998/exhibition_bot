@@ -54,6 +54,7 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
         ],
         "comments": data.get("comments"),
         "meeting_place": data.get("meeting_place"),
+        "importance": data.get("importance"),
     }
 
     status_code = 500  # Default to error
