@@ -581,9 +581,9 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
         
         # Create keyboard with importance options
         keyboard_rows = [
-            [InlineKeyboardButton(text="🟢 Low", callback_data="importance:low")],
+            [InlineKeyboardButton(text="⚪ Low", callback_data="importance:low")],
             [InlineKeyboardButton(text="🟡 Medium", callback_data="importance:medium")],
-            [InlineKeyboardButton(text="🔴 High", callback_data="importance:high")],
+            [InlineKeyboardButton(text="🟢 High", callback_data="importance:high")],
             [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")],
         ]
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
