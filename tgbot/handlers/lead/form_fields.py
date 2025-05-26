@@ -232,11 +232,6 @@ async def process_email(message: Message, state: FSMContext):
             "❌ <b>Error:</b> Email cannot be empty.", parse_mode="HTML"
         )
         return
-    if not is_valid_email(message.text):
-        await message.answer(
-            "❌ <b>Error:</b> Invalid email format.", parse_mode="HTML"
-        )
-        return
     await state.update_data(email=message.text)
     data = await state.get_data()
     summary = await generate_summary(data)
