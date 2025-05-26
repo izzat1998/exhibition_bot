@@ -66,7 +66,7 @@ class MyApi(BaseClient):
         headers = {"X-Telegram-Bot-API-Token": self.api_key}
         status, result = await self._make_request(
             method="GET",
-            url="/api/leads/categories/list_via_telegram/",
+            url="/api/leads/categories/list_via_telegram/?is_active=true",
             headers=headers,
             *args,
             **kwargs,
