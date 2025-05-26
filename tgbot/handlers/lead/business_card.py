@@ -478,11 +478,9 @@ async def process_business_card_photo(message: Message, state: FSMContext):
             await state.update_data(full_name=extracted_data_from_ocr.get("full_name"))
         if extracted_data_from_ocr.get("position"):
             await state.update_data(position=extracted_data_from_ocr.get("position"))
-        if phone and is_valid_phone(phone):
+        if phone:
             await state.update_data(phone_number=phone)
-        if extracted_data_from_ocr.get("email") and is_valid_email(
-            extracted_data_from_ocr.get("email")
-        ):
+        if extracted_data_from_ocr.get("email"):
             await state.update_data(email=extracted_data_from_ocr.get("email"))
         if extracted_data_from_ocr.get("company_name"):
             await state.update_data(
@@ -493,11 +491,8 @@ async def process_business_card_photo(message: Message, state: FSMContext):
         all_contact_fields_present = (
             bool(extracted_data_from_ocr.get("full_name"))
             and bool(extracted_data_from_ocr.get("position"))
-            and (phone and is_valid_phone(phone))
-            and (
-                extracted_data_from_ocr.get("email")
-                and is_valid_email(extracted_data_from_ocr.get("email"))
-            )
+            and bool(phone)
+            and bool(extracted_data_from_ocr.get("email"))
             and bool(extracted_data_from_ocr.get("company_name"))
         )
         await state.update_data(all_contact_fields_present=all_contact_fields_present)
