@@ -187,6 +187,18 @@ async def generate_summary(data: dict) -> str:
 
 def is_valid_email(email: str) -> bool:
     """Validate email format."""
+    # Ensure input is a string
+    if not isinstance(email, str):
+        return False
+        
+    # Check for empty string
+    if not email or email.isspace():
+        return False
+        
+    # Check for double dots in domain
+    if ".." in email.split("@")[-1]:
+        return False
+        
     # Basic email validation pattern
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return bool(re.match(pattern, email))

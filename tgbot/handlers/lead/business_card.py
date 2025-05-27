@@ -244,7 +244,7 @@ async def skip_business_card_text(message: Message, state: FSMContext):
 
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
         await message.answer(
-            "<b>Step 3/15:</b> What is your full name?",
+            "<b>Step 3/15:</b> What is full name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
@@ -300,7 +300,7 @@ async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
         await callback.message.answer(
             "<b>Manual form filling selected.</b>\n\n"
-            "<b>Step 3/15:</b> What is your full name?",
+            "<b>Step 3/15:</b> What is your name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
@@ -353,7 +353,7 @@ async def process_skip_text(message: Message, state: FSMContext):
             markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
             await message.answer(
                 "<b>Manual form filling selected.</b>\n\n"
-                "<b>Step 3/15:</b> What is your full name?",
+                "<b>Step 3/15:</b> What is  full name?",
                 parse_mode="HTML",
                 reply_markup=markup,
             )
@@ -437,7 +437,7 @@ async def process_business_card_photo(message: Message, state: FSMContext):
         )
         if is_initial_upload:
             await message.answer(
-                "Let's fill in the form manually.\n\n<b>Step 2/14:</b> What is your full name?",
+                "Let's fill in the form manually.\n\n<b>Step 2/14:</b> What is full name?",
                 parse_mode="HTML",
                 reply_markup=InlineKeyboardMarkup(
                     inline_keyboard=[
@@ -636,7 +636,7 @@ async def ocr_step_by_step_cb(callback: CallbackQuery, state: FSMContext):
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
 
     await callback.message.answer(
-        f"{current_summary}\n\n<b>Step 2/14:</b> What is your full name?",
+        f"{current_summary}\n\n<b>Step 2/14:</b> What is full name?",
         parse_mode="HTML",
         reply_markup=markup,
     )

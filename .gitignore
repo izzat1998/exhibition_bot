@@ -62,3 +62,4 @@ venv.bak/
 .idea/
 .env
 cache/
+test_user_session.session
