@@ -261,26 +261,39 @@ async def skip_business_card_text(message: Message, state: FSMContext):
 async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
     """Handle skip business card button for both initial and final form states."""
     data = await state.get_data()
+    current_state = await state.get_state()
 
-    # Check if it's an initial skip (no other data collected beyond OCR flags)
-    is_initial_skip = not any(
-        key in data
-        for key in [
-            "full_name",
-            "position",
-            "phone_number",
-            "email",
-            "company_name",
-            "sphere_of_activity",
-            "company_type",
-            "cargo",
-            "mode_of_transport",
-            "shipment_volume",
-            "selected_directions",
-            "comments",
-            "meeting_place",
-        ]
-    )
+    # Consider it an initial skip if we're in exhibition or business_card state
+    # regardless of what data might be in the state from previous entries
+    is_initial_form_state = current_state in [
+        "LeadForm:exhibition_selection",
+        "LeadForm:business_card_photo",
+    ]
+
+    # If we're in an early form state, treat as initial skip
+    # This handles cases where user navigated back to early steps
+    if is_initial_form_state:
+        is_initial_skip = True
+    else:
+        # Otherwise use the normal data check for final states
+        is_initial_skip = not any(
+            key in data
+            for key in [
+                "full_name",
+                "position",
+                "phone_number",
+                "email",
+                "company_name",
+                "sphere_of_activity",
+                "company_type",
+                "cargo",
+                "mode_of_transport",
+                "shipment_volume",
+                "selected_directions",
+                "comments",
+                "meeting_place",
+            ]
+        )
 
     await state.update_data(
         business_card_photo=None,
