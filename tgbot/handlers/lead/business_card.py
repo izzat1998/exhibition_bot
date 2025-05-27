@@ -300,7 +300,7 @@ async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
         await callback.message.answer(
             "<b>Manual form filling selected.</b>\n\n"
-            "<b>Step 3/15:</b> What is your name?",
+            "<b>Step 3/15:</b> What is full name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
