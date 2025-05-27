@@ -353,7 +353,7 @@ async def process_skip_text(message: Message, state: FSMContext):
             markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
             await message.answer(
                 "<b>Manual form filling selected.</b>\n\n"
-                "<b>Step 3/15:</b> What is  full name?",
+                "<b>Step 3/15:</b> What is the full name?",
                 parse_mode="HTML",
                 reply_markup=markup,
             )
@@ -362,7 +362,8 @@ async def process_skip_text(message: Message, state: FSMContext):
             # At the end of form, show summary
             await show_summary(message, state)
     else:
-        # If it's not a skip command, inform the user we're expecting a photo
+        # If it's not a skip command, just inform the user we're expecting a photo
+        # We do NOT proceed to any other state or set any data
         await message.answer(
             "📸 <b>Please upload a business card photo</b> or use the 'Skip Business Card' button.\n\n"
             "If you want to skip, you can also type 'skip'.",

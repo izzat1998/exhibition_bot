@@ -6,7 +6,7 @@ class LeadForm(StatesGroup):
 
     # Exhibition selection
     exhibition_selection = State()
-    
+
     # Start with business card for OCR
     business_card_photo = State()
     ocr_confirmation = State()
@@ -34,6 +34,6 @@ class LeadForm(StatesGroup):
 
     # Meeting information
     meeting_place = State()
-    
+
     # Lead importance
     importance = State()
