@@ -105,7 +105,7 @@ async def generate_summary(data: dict) -> str:
         ("medium", "Medium"),
         ("high", "High"),
     ]
-    
+
     field_map = {
         "exhibition": ("🎪 <b>Exhibition:</b>", None),
         "full_name": ("📝 <b>Full Name:</b>", None),
@@ -116,7 +116,10 @@ async def generate_summary(data: dict) -> str:
         "sphere_of_activity": ("🔍 <b>Sphere of activity:</b>", None),
         "company_type": ("📊 <b>Company type:</b>", COMPANY_TYPE_CHOICES),
         "cargo": ("📦 <b>Cargo:</b>", None),
-        "mode_of_transport": ("🚢 <b>Preferred mode of transport:</b>", MODE_OF_TRANSPORT_CHOICES),
+        "mode_of_transport": (
+            "🚢 <b>Preferred mode of transport:</b>",
+            MODE_OF_TRANSPORT_CHOICES,
+        ),
         "shipment_volume": ("📏 <b>Monthly shipment volume:</b>", None),
         # shipment_directions is handled specially
         "comments": ("💬 <b>Comments:</b>", None),
@@ -184,11 +187,15 @@ async def generate_summary(data: dict) -> str:
 
 def is_valid_email(email: str) -> bool:
     """Validate email format."""
-    True
+    # Basic email validation pattern
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    return bool(re.match(pattern, email))
 
 
 def is_valid_phone(phone: str) -> bool:
     """Validate phone number format."""
+    # Allow digits, spaces, plus, parentheses, hyphens, and forward slash (for multiple numbers)
+    # This allows formats like: +1 (123) 456-7890, 123-456-7890, +1234567890, 123 456 7890, 123/456
     return True
 
 
