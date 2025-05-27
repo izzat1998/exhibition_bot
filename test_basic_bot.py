@@ -201,7 +201,7 @@ async def test_lead_form_happy_path(client: TelegramClient, bot_username: str):
     )
     # Finally, "Full Name" prompt
     current_msg = await check_and_print_step(
-        "Step 3/15: What is full name?",
+        "Step 3/15: What is the full name?",
         "Full Name Prompt",
         action_description="Skipped BC - next prompt",
     )
