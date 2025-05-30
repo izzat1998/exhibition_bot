@@ -5,7 +5,7 @@ from tgbot.config import Config
 class MyApi(BaseClient):
     def __init__(self, config: Config, **kwargs):
         self.api_key = config.tg_bot.token
-        self.base_url = "https://exhibition.khamraev.uz"
+        self.base_url = "https://exhibition-api.interrail.uz"
         super().__init__(base_url=self.base_url)
 
     async def __aenter__(self):

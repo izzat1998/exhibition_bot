@@ -131,6 +131,47 @@ class RedisConfig:
 
 
 @dataclass
+class WebhookConfig:
+    """
+    Webhook configuration class.
+    
+    This class holds the settings for the webhook configuration, such as host, path, port, etc.
+    
+    Attributes
+    ----------
+    host : str
+        The host where the webhook server will be accessible from Telegram.
+    path : str
+        The path part of the webhook URL.
+    port : int
+        The port where the webhook server will listen.
+    use_webhook : bool
+        Whether to use webhook or polling mode.
+    """
+    
+    host: str
+    path: str
+    port: int
+    use_webhook: bool
+    
+    @staticmethod
+    def from_env(env: Env):
+        """
+        Creates the WebhookConfig object from environment variables.
+        """
+        host = env.str("WEBHOOK_HOST", "")
+        path = env.str("WEBHOOK_PATH", "/webhook")
+        port = env.int("WEBHOOK_PORT", 8443)
+        use_webhook = env.bool("USE_WEBHOOK", False)
+        
+        return WebhookConfig(
+            host=host,
+            path=path,
+            port=port,
+            use_webhook=use_webhook
+        )
+
+@dataclass
 class Miscellaneous:
     """
     Miscellaneous configuration class.
@@ -160,6 +201,8 @@ class Config:
         Holds the settings related to the Telegram Bot.
     misc : Miscellaneous
         Holds the values for miscellaneous settings.
+    webhook : WebhookConfig
+        Holds the settings related to the webhook configuration.
     db : Optional[DbConfig]
         Holds the settings specific to the database (default is None).
     redis : Optional[RedisConfig]
@@ -168,6 +211,7 @@ class Config:
 
     tg_bot: TgBot
     misc: Miscellaneous
+    webhook: WebhookConfig
     db: Optional[DbConfig] = None
     redis: Optional[RedisConfig] = None
 
@@ -189,5 +233,6 @@ def load_config(path: str = None) -> Config:
         tg_bot=TgBot.from_env(env),
         # db=DbConfig.from_env(env),
         # redis=RedisConfig.from_env(env),
+        webhook=WebhookConfig.from_env(env),
         misc=Miscellaneous(),
     )

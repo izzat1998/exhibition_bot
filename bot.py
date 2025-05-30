@@ -5,6 +5,8 @@ import betterlogging as bl
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiohttp import web
 
 from tgbot.config import Config, load_config
 from tgbot.handlers import routers_list
@@ -97,8 +99,49 @@ async def main():
     register_global_middlewares(dp, config)
 
     await on_startup(bot, config.tg_bot.admin_ids)
-    await bot.delete_webhook()
-    await dp.start_polling(bot)
+
+    # Choose between webhook and polling based on configuration
+    # To use webhook mode, set USE_WEBHOOK=true in .env file and configure:
+    # WEBHOOK_HOST - Full URL to your server (e.g., https://example.com)
+    # WEBHOOK_PATH - Path for webhook (e.g., /webhook)
+    # WEBHOOK_PORT - Port to listen on (e.g., 8443, 443, 80, 88)
+    if config.webhook.use_webhook:
+        # Set up webhook
+        webhook_url = f"{config.webhook.host}{config.webhook.path}"
+        await bot.set_webhook(url=webhook_url)
+
+        # Create web application
+        app = web.Application()
+
+        # Setup webhook handler
+        webhook_requests_handler = SimpleRequestHandler(
+            dispatcher=dp,
+            bot=bot,
+        )
+        webhook_requests_handler.register(app, path=config.webhook.path)
+
+        # Setup application
+        setup_application(app, dp, bot=bot)
+
+        # Start web server
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(
+            runner,
+            host="0.0.0.0",  # Listen on all interfaces
+            port=config.webhook.port,
+        )
+
+        await site.start()
+
+        # Run forever
+        print("Webhook mode, Bot started")
+        await asyncio.Event().wait()
+    else:
+        # Use polling mode
+        print("Polling mode, Bot started")
+        await bot.delete_webhook()
+        await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
