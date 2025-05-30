@@ -147,8 +147,8 @@ async def register_with_company(callback: CallbackQuery):
             status, result = await api.register(
                 telegram_id=callback.from_user.id,
                 company_id=company_id,
-                first_name=callback.from_user.first_name,
-                last_name=callback.from_user.last_name,
+                first_name=callback.from_user.first_name or "Unknown",
+                last_name=callback.from_user.last_name or "Unknown",
             )
 
             if status in (200, 201):
