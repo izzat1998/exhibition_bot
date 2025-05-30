@@ -1,6 +1,7 @@
 from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -19,6 +20,13 @@ user_router = Router()
 START_BUTTON_PATTERNS = ["🔄 Start", "Start"]
 HELP_BUTTON_PATTERNS = ["❓ Help", "Help"]
 LEAD_BUTTON_PATTERNS = ["📝 New Lead", "Lead"]
+
+
+# Define states for registration flow
+class RegistrationStates(StatesGroup):
+    waiting_for_first_name = State()
+    waiting_for_last_name = State()
+    waiting_for_registration = State()
 
 
 @user_router.message(CommandStart())
@@ -133,48 +141,38 @@ async def show_company_selection(message: Message, api: MyApi):
 
 
 @user_router.callback_query(F.data.startswith("company:"))
-async def register_with_company(callback: CallbackQuery):
+async def register_with_company(callback: CallbackQuery, state: FSMContext):
     try:
         await callback.answer()  # Acknowledge the callback first
 
         # Extract company ID from callback data
         company_id = callback.data.split(":")[1]
 
-        config = load_config()
+        # Store company_id in state for later use
+        await state.update_data(company_id=company_id)
 
-        async with MyApi(config=config) as api:
-            # Register user with selected company
-            status, result = await api.register(
-                telegram_id=callback.from_user.id,
-                company_id=company_id,
-                first_name=callback.from_user.first_name or "Unknown",
-                last_name=callback.from_user.last_name or "Unknown",
-            )
+        # Check if first_name is missing
+        if not callback.from_user.first_name:
+            await state.set_state(RegistrationStates.waiting_for_first_name)
+            await callback.message.answer("Please enter your first name:")
+            return
 
-            if status in (200, 201):
-                # Edit the original message to remove the inline keyboard
-                await callback.message.edit_text(
-                    "✅ Registration successful! Welcome to the system.\n\n"
-                    "You can now use the /lead command to start the lead form."
-                )
-                # Send a new message with the main keyboard
-                await callback.message.answer(
-                    "Use the buttons below for quick access to commands:",
-                    reply_markup=get_main_keyboard(),
-                )
-            else:
-                # Edit the original message to show the error with retry option
-                keyboard = [
-                    [
-                        InlineKeyboardButton(
-                            text="🔄 Try Again", callback_data="retry_registration"
-                        )
-                    ]
-                ]
-                markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
-                await callback.message.edit_text(
-                    "❌ Registration failed. Please try again.", reply_markup=markup
-                )
+        # Check if last_name is missing
+        if not callback.from_user.last_name:
+            # Store first_name in state
+            await state.update_data(first_name=callback.from_user.first_name)
+            await state.set_state(RegistrationStates.waiting_for_last_name)
+            await callback.message.answer("Please enter your last name:")
+            return
+
+        # If both first_name and last_name are available, proceed with registration
+        await complete_registration(
+            callback.message,
+            callback.from_user.id,
+            company_id,
+            callback.from_user.first_name,
+            callback.from_user.last_name,
+        )
     except Exception as e:
         print(f"Error in register_with_company: {e}")
         await callback.message.answer(
@@ -212,3 +210,84 @@ async def handle_lead_button(message: Message, state: FSMContext = None):
 async def handle_help_button(message: Message):
     """Handle 'Help' button text as /help command"""
     await help_command(message)
+
+
+# Handlers for registration state machine
+@user_router.message(RegistrationStates.waiting_for_first_name)
+async def process_first_name(message: Message, state: FSMContext):
+    """Process the first name provided by the user"""
+    # Store the first name
+    first_name = message.text.strip()
+    if not first_name:
+        await message.answer("Please enter a valid first name:")
+        return
+
+    await state.update_data(first_name=first_name)
+
+    # Check if we also need last name
+    await state.set_state(RegistrationStates.waiting_for_last_name)
+    await message.answer("Please enter your last name:")
+
+
+@user_router.message(RegistrationStates.waiting_for_last_name)
+async def process_last_name(message: Message, state: FSMContext):
+    """Process the last name provided by the user"""
+    # Store the last name
+    last_name = message.text.strip()
+    if not last_name:
+        await message.answer("Please enter a valid last name:")
+        return
+
+    # Get all stored data
+    data = await state.get_data()
+    first_name = data.get("first_name")
+    company_id = data.get("company_id")
+
+    # Clear the state
+    await state.clear()
+
+    # Complete the registration
+    await complete_registration(
+        message, message.from_user.id, company_id, first_name, last_name
+    )
+
+
+async def complete_registration(
+    message, telegram_id, company_id, first_name, last_name
+):
+    """Complete the registration process with the API"""
+    config = load_config()
+
+    async with MyApi(config=config) as api:
+        # Register user with selected company
+        status, result = await api.register(
+            telegram_id=telegram_id,
+            company_id=company_id,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        if status in (200, 201):
+            # Registration successful
+            await message.answer(
+                "✅ Registration successful! Welcome to the system.\n\n"
+                "You can now use the /lead command to start the lead form."
+            )
+            # Send a new message with the main keyboard
+            await message.answer(
+                "Use the buttons below for quick access to commands:",
+                reply_markup=get_main_keyboard(),
+            )
+        else:
+            # Registration failed
+            keyboard = [
+                [
+                    InlineKeyboardButton(
+                        text="🔄 Try Again", callback_data="retry_registration"
+                    )
+                ]
+            ]
+            markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+            await message.answer(
+                "❌ Registration failed. Please try again.", reply_markup=markup
+            )
