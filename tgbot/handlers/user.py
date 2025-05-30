@@ -145,7 +145,10 @@ async def register_with_company(callback: CallbackQuery):
         async with MyApi(config=config) as api:
             # Register user with selected company
             status, result = await api.register(
-                telegram_id=callback.from_user.id, company_id=company_id
+                telegram_id=callback.from_user.id,
+                company_id=company_id,
+                first_name=callback.from_user.first_name,
+                last_name=callback.from_user.last_name,
             )
 
             if status in (200, 201):
@@ -201,6 +204,7 @@ async def handle_lead_button(message: Message, state: FSMContext = None):
     """Handle 'Lead' button text as /lead command"""
     # Import cmd_lead from the business_card module
     from tgbot.handlers.lead.business_card import cmd_lead
+
     await cmd_lead(message, state)
 
 

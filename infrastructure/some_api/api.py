@@ -16,13 +16,26 @@ class MyApi(BaseClient):
         """Ensure session is closed when exiting context."""
         await self.close()
 
-    async def register(self, telegram_id: int, company_id: int, *args, **kwargs):
+    async def register(
+        self,
+        telegram_id: int,
+        company_id: int,
+        first_name: str,
+        last_name: str,
+        *args,
+        **kwargs,
+    ):
         headers = {"X-Telegram-Bot-API-Token": self.api_key}
         status, result = await self._make_request(
             method="POST",
             url="/api/accounts/telegram-registration/",
             headers=headers,
-            json={"telegram_id": telegram_id, "company_id": company_id},
+            json={
+                "telegram_id": telegram_id,
+                "company_id": company_id,
+                "first_name": first_name,
+                "last_name": last_name,
+            },
             *args,
             **kwargs,
         )
