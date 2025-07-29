@@ -66,6 +66,7 @@ async def get_previous_state(current_state: str) -> Optional[str]:
         "phone_number",
         "email",
         "company_name",
+        "company_address",
         "sphere_of_activity",
         "company_type",
         "cargo",
@@ -96,7 +97,7 @@ async def generate_summary(data: dict) -> str:
     Only shows fields that have been filled in.
     """
     summary = "📋 <b>Lead Information Summary</b>\n\n"
-    total_fields = 16  # Updated to include exhibition and importance
+    total_fields = 17  # Updated to include exhibition, importance, and company_address
     filled_fields = 0
 
     # Define importance choices for display
@@ -113,6 +114,7 @@ async def generate_summary(data: dict) -> str:
         "phone_number": ("📱 <b>Phone number:</b>", None),
         "email": ("📧 <b>Email address:</b>", None),
         "company_name": ("🏭 <b>Company name:</b>", None),
+        "company_address": ("🏢 <b>Company address:</b>", None),
         "sphere_of_activity": ("🔍 <b>Sphere of activity:</b>", None),
         "company_type": ("📊 <b>Company type:</b>", COMPANY_TYPE_CHOICES),
         "cargo": ("📦 <b>Cargo:</b>", None),

@@ -18,6 +18,7 @@ class LeadForm(StatesGroup):
 
     # Company information
     company_name = State()
+    company_address = State()
     sphere_of_activity = State()
     company_type = State()
 

@@ -42,6 +42,7 @@ async def confirm_lead(callback: CallbackQuery, state: FSMContext):
         "phone_number": data.get("phone_number"),
         "email": data.get("email"),
         "company_name": data.get("company_name"),
+        "company_address": data.get("company_address"),
         "sphere_of_activity": data.get("sphere_of_activity"),
         "company_type": data.get("company_type"),
         "cargo": data.get("cargo"),
@@ -127,7 +128,7 @@ async def restart_lead_form(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         "📋 <b>Lead Information Form Restarted</b>\n\n"
         "Let's start by uploading your business card for automatic information extraction.\n\n"
-        "<b>Step 1/14:</b> Please upload a photo of your business card, or type 'skip' to fill the form manually.",
+        "<b>Step 2/17:</b> Please upload a photo of your business card, or type 'skip' to fill the form manually.",
         parse_mode="HTML",
     )
     await state.set_state(LeadForm.business_card_photo)

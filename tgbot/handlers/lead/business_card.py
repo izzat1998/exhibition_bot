@@ -30,6 +30,7 @@ SUGGESTION_VALUE_MAX_BYTES = {
     "phone": 35,
     "email": 35,
     "company": 30,
+    "company_address": 25,
 }
 
 business_card_router = Router()
@@ -95,7 +96,7 @@ async def cmd_lead(message: Message, state: FSMContext):
 
 Let's start by selecting the exhibition where you met this lead.
 
-<b>Step 1/15:</b> Please select the exhibition from the list below.
+<b>Step 1/17:</b> Please select the exhibition from the list below.
                 """
 
                 await message.answer(
@@ -166,7 +167,7 @@ Now, let's continue with the business card to automatically fill in contact deta
 • Avoid shadows and glare
 • Make sure all text is visible
 
-<b>Step 2/15:</b> Upload a business card photo or skip to enter details manually.
+<b>Step 2/17:</b> Upload a business card photo or skip to enter details manually.
         """
 
         # Edit the original message to show business card instructions
@@ -200,6 +201,7 @@ async def skip_business_card_text(message: Message, state: FSMContext):
             "phone_number",
             "email",
             "company_name",
+            "company_address",
             "sphere_of_activity",
             "company_type",
             "cargo",
@@ -244,7 +246,7 @@ async def skip_business_card_text(message: Message, state: FSMContext):
 
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
         await message.answer(
-            "<b>Step 3/15:</b> What is the full name?",
+            "<b>Step 3/17:</b> What is the full name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
@@ -284,6 +286,7 @@ async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
                 "phone_number",
                 "email",
                 "company_name",
+                "company_address",
                 "sphere_of_activity",
                 "company_type",
                 "cargo",
@@ -313,7 +316,7 @@ async def skip_business_card_button(callback: CallbackQuery, state: FSMContext):
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
         await callback.message.answer(
             "<b>Manual form filling selected.</b>\n\n"
-            "<b>Step 3/15:</b> What is the full name?",
+            "<b>Step 3/17:</b> What is the full name?",
             parse_mode="HTML",
             reply_markup=markup,
         )
@@ -340,6 +343,7 @@ async def process_skip_text(message: Message, state: FSMContext):
                 "phone_number",
                 "email",
                 "company_name",
+                "company_address",
                 "sphere_of_activity",
                 "company_type",
                 "cargo",
@@ -366,7 +370,7 @@ async def process_skip_text(message: Message, state: FSMContext):
             markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
             await message.answer(
                 "<b>Manual form filling selected.</b>\n\n"
-                "<b>Step 3/15:</b> What is the full name?",
+                "<b>Step 3/17:</b> What is the full name?",
                 parse_mode="HTML",
                 reply_markup=markup,
             )
@@ -432,7 +436,8 @@ async def process_business_card_photo(message: Message, state: FSMContext):
             "position",
             "phone_number",
             "email",
-            "company_name",  # etc.
+            "company_name",
+            "company_address",  # etc.
             "meeting_place",  # Meeting place is the last step before final business card prompt
         ]
         if key
@@ -451,7 +456,7 @@ async def process_business_card_photo(message: Message, state: FSMContext):
         )
         if is_initial_upload:
             await message.answer(
-                "Let's fill in the form manually.\n\n<b>Step 2/14:</b> What is the full name?",
+                "Let's fill in the form manually.\n\n<b>Step 3/17:</b> What is the full name?",
                 parse_mode="HTML",
                 reply_markup=InlineKeyboardMarkup(
                     inline_keyboard=[
@@ -485,6 +490,10 @@ async def process_business_card_photo(message: Message, state: FSMContext):
         extracted_fields_summary.append(
             f"🏭 Company: {extracted_data_from_ocr['company_name']}"
         )
+    if extracted_data_from_ocr.get("company_address"):
+        extracted_fields_summary.append(
+            f"🏢 Address: {extracted_data_from_ocr['company_address']}"
+        )
 
     if is_initial_upload:
         # Auto-fill valid data if initial upload
@@ -500,6 +509,10 @@ async def process_business_card_photo(message: Message, state: FSMContext):
             await state.update_data(
                 company_name=extracted_data_from_ocr.get("company_name")
             )
+        if extracted_data_from_ocr.get("company_address"):
+            await state.update_data(
+                company_address=extracted_data_from_ocr.get("company_address")
+            )
 
         # Store all_fields_present for ocr:confirm logic
         all_contact_fields_present = (
@@ -508,6 +521,7 @@ async def process_business_card_photo(message: Message, state: FSMContext):
             and bool(phone)
             and bool(extracted_data_from_ocr.get("email"))
             and bool(extracted_data_from_ocr.get("company_name"))
+            and bool(extracted_data_from_ocr.get("company_address"))
         )
         await state.update_data(all_contact_fields_present=all_contact_fields_present)
 
@@ -564,31 +578,34 @@ async def ocr_confirm_cb(callback: CallbackQuery, state: FSMContext):
     # This logic matches the one in the original process_business_card_initial's ocr:confirm part
     if data.get("all_contact_fields_present"):
         next_step_message = (
-            f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?"
+            f"{summary}\n\n<b>Step 9/17:</b> What is the company's sphere of activity?"
         )
         next_fsm_state = LeadForm.sphere_of_activity
     elif not data.get("full_name"):
-        next_step_message = f"{summary}\n\n<b>Step 2/14:</b> What is the full name?"
+        next_step_message = f"{summary}\n\n<b>Step 3/17:</b> What is the full name?"
         next_fsm_state = LeadForm.full_name
     elif not data.get("position"):
         next_step_message = (
-            f"{summary}\n\n<b>Step 3/14:</b> What is the position in the company?"
+            f"{summary}\n\n<b>Step 4/17:</b> What is the position in the company?"
         )
         next_fsm_state = LeadForm.position
     elif not data.get(
         "phone_number"
     ):  # This implies extracted phone was invalid or not present
-        next_step_message = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number (enter personal and office number using '/' between them)?"
+        next_step_message = f"{summary}\n\n<b>Step 5/17:</b> What is the phone number (enter personal and office number using '/' between them)?"
         next_fsm_state = LeadForm.phone_number
     elif not data.get("email"):  # Implies extracted email was invalid or not present
-        next_step_message = f"{summary}\n\n<b>Step 5/14:</b> What is the email address?"
+        next_step_message = f"{summary}\n\n<b>Step 6/17:</b> What is the email address?"
         next_fsm_state = LeadForm.email
     elif not data.get("company_name"):
-        next_step_message = f"{summary}\n\n<b>Step 6/14:</b> What is the company name?"
+        next_step_message = f"{summary}\n\n<b>Step 7/17:</b> What is the company name?"
         next_fsm_state = LeadForm.company_name
+    elif not data.get("company_address"):
+        next_step_message = f"{summary}\n\n<b>Step 8/17:</b> What is the company address?"
+        next_fsm_state = LeadForm.company_address
     else:  # Should be caught by all_contact_fields_present, but as a fallback
         next_step_message = (
-            f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?"
+            f"{summary}\n\n<b>Step 9/17:</b> What is the company's sphere of activity?"
         )
         next_fsm_state = LeadForm.sphere_of_activity
 
@@ -624,6 +641,7 @@ async def ocr_step_by_step_cb(callback: CallbackQuery, state: FSMContext):
         phone_number=None,
         email=None,
         company_name=None,
+        company_address=None,
         extracted_data=extracted_ocr_data,  # Preserve
         ocr_processed=ocr_was_processed_flag,  # Preserve
     )
@@ -650,7 +668,7 @@ async def ocr_step_by_step_cb(callback: CallbackQuery, state: FSMContext):
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
 
     await callback.message.answer(
-        f"{current_summary}\n\n<b>Step 2/14:</b> What is the full name?",
+        f"{current_summary}\n\n<b>Step 3/17:</b> What is the full name?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -677,7 +695,9 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
 
     actual_value_to_use = value_from_cb
     if value_from_cb.endswith("...") and extracted_data_state.get(
-        field_type if field_type != "company" else "company_name"
+        field_type if field_type not in ["company", "company_address"] else (
+            "company_name" if field_type == "company" else "company_address"
+        )
     ):
         if field_type == "name" and extracted_data_state.get("full_name"):
             actual_value_to_use = extracted_data_state.get("full_name")
@@ -694,6 +714,8 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
             actual_value_to_use = extracted_data_state.get("email")
         elif field_type == "company" and extracted_data_state.get("company_name"):
             actual_value_to_use = extracted_data_state.get("company_name")
+        elif field_type == "company_address" and extracted_data_state.get("company_address"):
+            actual_value_to_use = extracted_data_state.get("company_address")
 
     await callback.answer(
         f"{field_type.replace('_', ' ').title()} set to: {actual_value_to_use[:30]}..."
@@ -711,7 +733,7 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
 
     if field_type == "name":
         updated_fields["full_name"] = actual_value_to_use
-        next_prompt = "<b>Step 3/14:</b> What is your position in the company?"
+        next_prompt = "<b>Step 4/17:</b> What is your position in the company?"
         next_fsm_state = LeadForm.position
         if ocr_processed_state and extracted_data_state.get("position"):
             suggestion_for_next_step_field = "position"
@@ -719,7 +741,7 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
 
     elif field_type == "position":
         updated_fields["position"] = actual_value_to_use
-        next_prompt = "<b>Step 4/14:</b> What is your phone number?"
+        next_prompt = "<b>Step 5/17:</b> What is your phone number?"
         next_fsm_state = LeadForm.phone_number
         phone_val = extracted_data_state.get("phone") or extracted_data_state.get(
             "phone_number"
@@ -730,7 +752,7 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
 
     elif field_type == "phone":
         updated_fields["phone_number"] = actual_value_to_use
-        next_prompt = "<b>Step 5/14:</b> What is your email address?"
+        next_prompt = "<b>Step 6/17:</b> What is your email address?"
         next_fsm_state = LeadForm.email
         if ocr_processed_state and extracted_data_state.get("email"):
             suggestion_for_next_step_field = "email"
@@ -738,7 +760,7 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
 
     elif field_type == "email":
         updated_fields["email"] = actual_value_to_use
-        next_prompt = "<b>Step 6/14:</b> What is your company name?"
+        next_prompt = "<b>Step 7/17:</b> What is your company name?"
         next_fsm_state = LeadForm.company_name
         if ocr_processed_state and extracted_data_state.get("company_name"):
             suggestion_for_next_step_field = "company"
@@ -746,7 +768,15 @@ async def use_suggestion_cb(callback: CallbackQuery, state: FSMContext):
 
     elif field_type == "company":
         updated_fields["company_name"] = actual_value_to_use
-        next_prompt = "<b>Step 7/14:</b> What is your company's sphere of activity?"
+        next_prompt = "<b>Step 8/17:</b> What is the company address?"
+        next_fsm_state = LeadForm.company_address
+        if ocr_processed_state and extracted_data_state.get("company_address"):
+            suggestion_for_next_step_field = "company_address"
+            suggestion_for_next_step_value_cb = extracted_data_state.get("company_address")
+
+    elif field_type == "company_address":
+        updated_fields["company_address"] = actual_value_to_use
+        next_prompt = "<b>Step 9/17:</b> What is your company's sphere of activity?"
         next_fsm_state = LeadForm.sphere_of_activity
         # No typical OCR suggestion for sphere_of_activity
 

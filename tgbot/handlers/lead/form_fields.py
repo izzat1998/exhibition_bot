@@ -36,6 +36,7 @@ SUGGESTION_VALUE_MAX_BYTES = {
     "phone": 35,
     "email": 35,
     "company": 30,
+    "company_address": 25,
 }
 
 
@@ -107,7 +108,7 @@ async def _fetch_and_set_shipment_directions(message: Message, state: FSMContext
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
 
     await message.answer(
-        f"{summary}\n\n<b>Step 12/14:</b> Please select the shipment directions (you can select multiple):",
+        f"{summary}\n\n<b>Step 14/17:</b> Please select the shipment directions (you can select multiple):",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -144,7 +145,7 @@ async def process_full_name(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 3/14:</b> What is the position in the company?",
+        f"{summary}\n\n<b>Step 4/17:</b> What is the position in the company?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -179,7 +180,7 @@ async def process_position(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 4/14:</b> What is the phone number (enter personal and office number using '/' between them)",
+        f"{summary}\n\n<b>Step 5/17:</b> What is the phone number (enter personal and office number using '/' between them)",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -221,7 +222,7 @@ async def process_phone_number(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 5/14:</b> What is the email address?",
+        f"{summary}\n\n<b>Step 6/17:</b> What is the email address?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -253,7 +254,7 @@ async def skip_email(callback: CallbackQuery, state: FSMContext):
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     
     await callback.message.edit_text(
-        f"Email skipped.\n\n{summary}\n\n<b>Step 6/14:</b> What is the company name?",
+        f"Email skipped.\n\n{summary}\n\n<b>Step 7/17:</b> What is the company name?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -294,7 +295,7 @@ async def process_email(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 6/14:</b> What is the company name?",
+        f"{summary}\n\n<b>Step 7/17:</b> What is the company name?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -317,7 +318,30 @@ async def process_company_name(message: Message, state: FSMContext):
         ]
     )
     await message.answer(
-        f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?",
+        f"{summary}\n\n<b>Step 8/17:</b> What is the company address?",
+        parse_mode="HTML",
+        reply_markup=markup,
+    )
+    await state.set_state(LeadForm.company_address)
+
+
+@form_fields_router.message(StateFilter(LeadForm.company_address))
+async def process_company_address(message: Message, state: FSMContext):
+    if is_empty_or_whitespace(message.text):
+        await message.answer(
+            "❌ <b>Error:</b> Company address cannot be empty.", parse_mode="HTML"
+        )
+        return
+    await state.update_data(company_address=message.text)
+    data = await state.get_data()
+    summary = await generate_summary(data)
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="⬅️ Back", callback_data="lead:back")]
+        ]
+    )
+    await message.answer(
+        f"{summary}\n\n<b>Step 9/17:</b> What is the company's sphere of activity?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -344,7 +368,7 @@ async def process_sphere_of_activity(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 8/14:</b> What is the company type?",
+        f"{summary}\n\n<b>Step 10/17:</b> What is the company type?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -371,7 +395,7 @@ async def process_company_type(callback: CallbackQuery, state: FSMContext):
     )
 
     await callback.message.edit_text(
-        f"Selected company type: <b>{company_type_label}</b>\n\n{summary}\n\n<b>Step 9/14:</b> What type of cargo does company handle?",
+        f"Selected company type: <b>{company_type_label}</b>\n\n{summary}\n\n<b>Step 11/17:</b> What type of cargo does company handle?",
         parse_mode="HTML",
         reply_markup=next_step_markup,
     )
@@ -399,7 +423,7 @@ async def process_cargo(message: Message, state: FSMContext):
     )
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer(
-        f"{summary}\n\n<b>Step 10/14:</b> What is the preferred mode of transport?",
+        f"{summary}\n\n<b>Step 12/17:</b> What is the preferred mode of transport?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -426,7 +450,7 @@ async def process_mode_of_transport(callback: CallbackQuery, state: FSMContext):
     )
 
     await callback.message.edit_text(
-        f"Selected transport mode: <b>{mode_label}</b>\n\n{summary}\n\n<b>Step 11/14:</b> What is the monthly shipment volume?",
+        f"Selected transport mode: <b>{mode_label}</b>\n\n{summary}\n\n<b>Step 13/17:</b> What is the monthly shipment volume?",
         parse_mode="HTML",
         reply_markup=next_step_markup,
     )
@@ -519,7 +543,7 @@ async def process_direction_selection(callback: CallbackQuery, state: FSMContext
         f"<b>{selected_direction_name}</b> {action_text} your selected directions."
     )
     await callback.message.edit_text(
-        f"{status_message}\n\n{summary}\n\n<b>Step 12/14:</b> Please select the shipment directions (you can select multiple):",
+        f"{status_message}\n\n{summary}\n\n<b>Step 14/17:</b> Please select the shipment directions (you can select multiple):",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -555,7 +579,7 @@ async def process_directions_done(callback: CallbackQuery, state: FSMContext):
 
     # Edit the current message
     await callback.message.edit_text(
-        f"Selected directions: <b>{', '.join(selected_names)}</b>\n\n{summary}\n\n<b>Step 13/14:</b> Do you have any additional comments? ",
+        f"Selected directions: <b>{', '.join(selected_names)}</b>\n\n{summary}\n\n<b>Step 15/17:</b> Do you have any additional comments? ",
         parse_mode="HTML",
         reply_markup=next_step_markup,  # Keyboard for the next step
     )
@@ -593,7 +617,7 @@ async def process_comments(message: Message, state: FSMContext):
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
 
     await message.answer(
-        f"{confirmation_msg}\n\n{summary}\n\n<b>Step 14/15:</b> Where did the meeting take place?",
+        f"{confirmation_msg}\n\n{summary}\n\n<b>Step 16/17:</b> Where did the meeting take place?",
         parse_mode="HTML",
         reply_markup=markup,
     )
@@ -625,7 +649,7 @@ async def process_meeting_place(callback: CallbackQuery, state: FSMContext):
         markup = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
         
         await callback.message.edit_text(
-            f"Meeting place saved: <b>{meeting_place_label}</b>\n\n{summary}\n\n<b>Step 15/16:</b> How would you rate the importance of this lead?",
+            f"Meeting place saved: <b>{meeting_place_label}</b>\n\n{summary}\n\n<b>Step 17/17:</b> How would you rate the importance of this lead?",
             parse_mode="HTML",
             reply_markup=markup,
         )

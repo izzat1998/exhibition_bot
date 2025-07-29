@@ -34,6 +34,7 @@ SUGGESTION_VALUE_MAX_BYTES = {
     "phone": 35,  # "use_suggestion:phone:" + value
     "email": 35,  # "use_suggestion:email:" + value
     "company": 30,  # "use_suggestion:company:" + value
+    "company_address": 25,  # "use_suggestion:company_address:" + value
 }
 
 
@@ -93,7 +94,7 @@ Let's start with the business card to automatically fill in contact details.
 • Avoid shadows and glare
 • Make sure all text is visible
 
-<b>Step 1/14:</b> Upload a business card photo or type 'skip' to enter details manually.
+<b>Step 2/17:</b> Upload a business card photo or type 'skip' to enter details manually.
         """
 
         # Create inline keyboard with Skip button
@@ -111,7 +112,7 @@ Let's start with the business card to automatically fill in contact details.
         )  # Send new message for this step
 
     elif prev_state_name == "full_name":
-        prompt_text = f"{summary}\n\n<b>Step 2/14:</b> What is the full name?"
+        prompt_text = f"{summary}\n\n<b>Step 3/17:</b> What is the full name?"
         if ocr_processed and extracted_data.get("full_name"):
             val = extracted_data.get("full_name")
             safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["name"])
@@ -126,7 +127,7 @@ Let's start with the business card to automatically fill in contact details.
 
     elif prev_state_name == "position":
         prompt_text = (
-            f"{summary}\n\n<b>Step 3/14:</b> What is the position in the company?"
+            f"{summary}\n\n<b>Step 4/17:</b> What is the position in the company?"
         )
         if ocr_processed and extracted_data.get("position"):
             val = extracted_data.get("position")
@@ -143,7 +144,7 @@ Let's start with the business card to automatically fill in contact details.
             )
 
     elif prev_state_name == "phone_number":
-        prompt_text = f"{summary}\n\n<b>Step 4/14:</b> What is the phone number? (enter personal and office number using '/' between them)"
+        prompt_text = f"{summary}\n\n<b>Step 5/17:</b> What is the phone number? (enter personal and office number using '/' between them)"
         phone_val = extracted_data.get("phone") or extracted_data.get("phone_number")
         if ocr_processed and phone_val:
             safe_val = truncate_for_callback(
@@ -159,7 +160,7 @@ Let's start with the business card to automatically fill in contact details.
             )
 
     elif prev_state_name == "email":
-        prompt_text = f"{summary}\n\n<b>Step 5/14:</b> What is the email address?"
+        prompt_text = f"{summary}\n\n<b>Step 6/17:</b> What is the email address?"
         if ocr_processed and extracted_data.get("email"):
             val = extracted_data.get("email")
             safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["email"])
@@ -177,7 +178,7 @@ Let's start with the business card to automatically fill in contact details.
         )
 
     elif prev_state_name == "company_name":
-        prompt_text = f"{summary}\n\n<b>Step 6/14:</b> What is the company name?"
+        prompt_text = f"{summary}\n\n<b>Step 7/17:</b> What is the company name?"
         if ocr_processed and extracted_data.get("company_name"):
             val = extracted_data.get("company_name")
             safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["company"])
@@ -190,13 +191,27 @@ Let's start with the business card to automatically fill in contact details.
                 ]
             )
 
+    elif prev_state_name == "company_address":
+        prompt_text = f"{summary}\n\n<b>Step 8/17:</b> What is the company address?"
+        if ocr_processed and extracted_data.get("company_address"):
+            val = extracted_data.get("company_address")
+            safe_val = truncate_for_callback(val, SUGGESTION_VALUE_MAX_BYTES["company_address"])
+            keyboard_rows.append(
+                [
+                    InlineKeyboardButton(
+                        text=f"Use: {val}",
+                        callback_data=f"use_suggestion:company_address:{safe_val}",
+                    )
+                ]
+            )
+
     elif prev_state_name == "sphere_of_activity":
         prompt_text = (
-            f"{summary}\n\n<b>Step 7/14:</b> What is the company's sphere of activity?"
+            f"{summary}\n\n<b>Step 9/17:</b> What is the company's sphere of activity?"
         )
 
     elif prev_state_name == "company_type":
-        prompt_text = f"{summary}\n\n<b>Step 8/14:</b> What is the company type?"
+        prompt_text = f"{summary}\n\n<b>Step 10/17:</b> What is the company type?"
         for value, label in COMPANY_TYPE_CHOICES:
             keyboard_rows.append(
                 [
@@ -208,12 +223,12 @@ Let's start with the business card to automatically fill in contact details.
 
     elif prev_state_name == "cargo":
         prompt_text = (
-            f"{summary}\n\n<b>Step 9/14:</b> What type of cargo does company handle?"
+            f"{summary}\n\n<b>Step 11/17:</b> What type of cargo does company handle?"
         )
 
     elif prev_state_name == "mode_of_transport":
         prompt_text = (
-            f"{summary}\n\n<b>Step 10/14:</b> What is the preferred mode of transport?"
+            f"{summary}\n\n<b>Step 12/17:</b> What is the preferred mode of transport?"
         )
         for value, label in MODE_OF_TRANSPORT_CHOICES:
             keyboard_rows.append(
@@ -222,11 +237,11 @@ Let's start with the business card to automatically fill in contact details.
 
     elif prev_state_name == "shipment_volume":
         prompt_text = (
-            f"{summary}\n\n<b>Step 11/14:</b> What is the monthly shipment volume?"
+            f"{summary}\n\n<b>Step 13/17:</b> What is the monthly shipment volume?"
         )
 
     elif prev_state_name == "shipment_directions":
-        prompt_text = f"{summary}\n\n<b>Step 12/14:</b> Please select the shipment directions (you can select multiple):"
+        prompt_text = f"{summary}\n\n<b>Step 14/17:</b> Please select the shipment directions (you can select multiple):"
         directions = data.get("available_directions", [])
         selected_directions_ids = data.get("selected_directions", set())
         if isinstance(selected_directions_ids, list):  # Ensure set of strings
@@ -251,12 +266,12 @@ Let's start with the business card to automatically fill in contact details.
 
     elif prev_state_name == "comments":
         prompt_text = (
-            f"{summary}\n\n<b>Step 13/14:</b> Do you have any additional comments?"
+            f"{summary}\n\n<b>Step 15/17:</b> Do you have any additional comments?"
         )
 
     elif prev_state_name == "meeting_place":
         prompt_text = (
-            f"{summary}\n\n<b>Step 14/14:</b> Where did the meeting take place?"
+            f"{summary}\n\n<b>Step 16/17:</b> Where did the meeting take place?"
         )
         keyboard_rows.append(
             [
